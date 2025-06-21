@@ -80,6 +80,8 @@ function initTeamImagePin() {
             span.textContent = words.join(' ');
         }
     });
+
+
     let mm = gsap.matchMedia();
     mm.add("(min-width: 768px)", () => {
         gsap.set(".section.is--team", {
@@ -971,10 +973,8 @@ function initStandorteKontakt() {
         indicator.style.height = heightPercent + '%';
     }
 
-
     anreiseButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-
             btn.parentElement.classList.toggle('active');
 
         })
@@ -1458,14 +1458,16 @@ function initScripts(delay, hash) {
     initOpenVerticalModal();
     initHorizontalModal();
 
-    initSplitText();
-    initHeroAnimations(delay, hash);
-    initAppearEffects(delay);
-
 
     initHomePageAnimation();
     initScrollToTop();
     initCustomLazyLoad();
+
+    document.fonts.ready.then(() => {
+        initSplitText();
+        initAppearEffects(delay);
+        initHeroAnimations(delay, hash);
+    })
 }
 // Initialize Accordion CSS
 document.addEventListener('DOMContentLoaded', () => {
@@ -1487,60 +1489,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
     initScripts(2.4);
 
-
-    let oldScrolltriggers;
-
     swup.hooks.on('page:view', (visit) => {
-
-
-        oldScrolltriggers = ScrollTrigger.getAll();
-        // oldScrolltriggers.forEach(trigger => {
-        //     trigger.kill();
-        // });
         initScripts(.75, visit.to.hash);
     });
+
     swup.hooks.on("link:self", (event) => {
         window.lenis.scrollTo(0, {
             duration: 3,
             ease: "easeOutQuad",
         });
-
-
-    });
-    swup.hooks.on("visit:end", () => {
-        // Clean up old ScrollTriggers
-        // oldScrolltriggers.forEach(trigger => {
-        //     trigger.kill();
-        // });
-
     });
 
-
-
-    // document.querySelectorAll('a[href^="/#"]').forEach(link => {
-    //     link.addEventListener('click', function (e) {
-
-    //         const targetId = this.getAttribute('href')
-    //         const target = document.querySelector(targetId)
-
-    //         if (target) {
-    //             e.preventDefault();
-    //             e.stopImmediatePropagation(); // <- This is the key
-
-
-    //             window.lenis.scrollTo(target)
-    //         }
-    //     })
-    // })
-    // document.querySelectorAll("a").forEach(link => {
-    //     link.addEventListener('click', (e) => {
-    //         e.preventDefault();
-    //         e.stopImmediatePropagation(); // <- This is the key
-    //         console.log("Blocked navigation.");
-    //     }); // <-- Use capture phase, just in case
-    // });
 
 });
