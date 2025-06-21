@@ -52,6 +52,7 @@ function initLenis() {
     window.lenis = new Lenis({
         wrapper: scope,
         content: scope.children[0],
+
     });
 
 
@@ -162,16 +163,16 @@ function initMarqueeImageLoaded() {
         // Wait for all images to load before initializing
         const images = marqueeContent.querySelectorAll('img');
 
-        const imagePromises = Array.from(images).map(img => img.decode().catch(() => { }));
-        // const imagePromises = Array.from(images).map(img => {
-        //     if (img.complete) {
-        //         return Promise.resolve();
-        //     }
-        //     return new Promise(resolve => {
-        //         img.onload = resolve;
-        //         img.onerror = resolve;
-        //     });
-        // });
+        // const imagePromises = Array.from(images).map(img => img.decode().catch(() => { }));
+        const imagePromises = Array.from(images).map(img => {
+            if (img.complete) {
+                return Promise.resolve();
+            }
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve;
+            });
+        });
 
         Promise.all(imagePromises).then(() => {
             initMarquee(marquee, marqueeContent, marqueeScroll);
@@ -180,6 +181,9 @@ function initMarqueeImageLoaded() {
 }
 
 function initMarquee(marquee, marqueeContent, marqueeScroll) {
+
+    console.log("INITING MARQUEE");
+
     // Get data attributes
     const { marqueeSpeed: speed, marqueeDirection: direction, marqueeDuplicate: duplicate, marqueeScrollSpeed: scrollSpeed } = marquee.dataset;
 
@@ -192,6 +196,7 @@ function initMarquee(marquee, marqueeContent, marqueeScroll) {
     const speedMultiplier = window.innerWidth < 479 ? 0.25 : window.innerWidth < 991 ? 0.5 : 1;
 
     let marqueeSpeed = marqueeSpeedAttr * (marqueeContent.offsetWidth / window.innerWidth) * speedMultiplier;
+    console.log(marqueeSpeed);
 
     // Precompute styles for the scroll container
     marqueeScroll.style.marginLeft = `${scrollSpeedAttr * -1}%`;
@@ -268,6 +273,39 @@ function initNavigation() {
 
     let scope = wrappers[0];
     if (!scope.querySelector('.header-nav-link.is--angebote')) return; // Exit if no navigation elements found
+
+    scope.querySelectorAll('a[href*="/#"]').forEach(link => {
+        const href = link.getAttribute("href");
+        const currentUrl = window.location.pathname;
+        const targetUrl = new URL(href, window.location.origin).pathname;
+
+        console.log(currentUrl, targetUrl);
+
+        if (targetUrl === currentUrl) {
+            link.setAttribute("data-no-swup", "");
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+
+
+                const targetId = href.split('#')[1]; // Get the target ID from the href
+                console.log(targetId);
+
+                if (targetId) {
+                    setTimeout(() => {
+                        window.lenis.scrollTo(`#${targetId}`, {
+                            duration: 3,
+                            ease: "easeOutQuad",
+                        });
+                    }, 0);
+
+                }
+            })
+        }
+
+
+    });
+
+
     const trigger = scope.querySelector('.header-nav-link.is--angebote');
     const dropdown = scope.querySelector('.nav-link-wrapper');
     const nav = scope.querySelector('.nav');
@@ -367,7 +405,7 @@ function initDetectScrollingDirection() {
     const wrappers = document.querySelectorAll('.page-wrapper');
     let scope = wrappers[0];
     scope.addEventListener("scroll", () => {
-        const nowScrollTop = window.lenis.animatedScroll;
+        const nowScrollTop = window?.lenis?.animatedScroll;
 
 
 
@@ -381,6 +419,8 @@ function initDetectScrollingDirection() {
 
             // Update Scroll Started
             const started = nowScrollTop > thresholdTop;
+
+
             scope.setAttribute('data-scrolling-started', started ? 'true' : 'false')
             // wrapper[0].parentElement.querySelectorAll('[data-scrolling-started]').forEach(el =>
             //     el.setAttribute('data-scrolling-started', started ? 'true' : 'false')
@@ -424,6 +464,24 @@ function initSplitText() {
                 linesClass: "line",
             });
 
+        });
+    });
+}
+
+function initScrollToTop() {
+
+    const wrappers = document.querySelectorAll('.page-wrapper');
+    let scope = wrappers[0];
+
+    const buttons = scope.querySelectorAll('.back-to-top');
+    if (buttons.length == 0) return; // Exit if no scroll to top buttons found
+
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            window.lenis.scrollTo(0, {
+                duration: 3,
+                ease: "easeOutQuad",
+            });
         });
     });
 }
@@ -482,10 +540,20 @@ function initOpenVerticalModal() {
         button.addEventListener('click', () => {
             const dynItem = button.closest('.w-dyn-item'); // outer wrapper
             if (!dynItem) return;
+            const attr = button.getAttribute("data-modal-vertical-open")
+            let modal;
+            console.log(attr);
+            if (attr == "news") {
+                modal = scope.querySelector('.modal-vertical-container[data-type="news"]');
+            } else {
+                modal = dynItem.querySelector('.modal-vertical-container');
+            }
 
-            const modal = dynItem.querySelector('.modal-vertical-container');
+
             if (!modal) return;
             modal.querySelector('.modal-v-right-wrapper').scrollTop = 0;
+
+            window.lenis.destroy();
             closeTl?.kill(); // Kill the close timeline if it exists
             openTl = gsap.timeline({
                 defaults: {
@@ -554,6 +622,8 @@ function initOpenVerticalModal() {
             if (!modal) return;
 
             openTl?.kill(); // Kill the open timeline if it exists
+
+            initLenis();
             closeTl = gsap.timeline({
                 defaults: {
                     duration: duration,
@@ -656,6 +726,10 @@ function initHorizontalModal() {
                     clipPath: "inset(0% 0% 0% 100%)",
 
 
+                })
+
+                .set(modal.querySelector(".modal-backdrop"), {
+                    autoAlpha: 0,
                 })
                 .set(modal.querySelectorAll(".modal-horizontal-content-inner .line"), {
                     yPercent: 101,
@@ -784,7 +858,7 @@ function initHeaderLogo() {
         },
         onEnter: () => {
             gsap.to(scope.querySelector('.header-logo'), {
-                scale: .5,
+                scale: .6,
                 transformOrigin: 'top left',
                 ease: "easeOutQuad",
                 duration: .7
@@ -1014,7 +1088,7 @@ function initStandorteKontakt() {
 
 }
 
-function initHeroAnimations(delay) {
+function initHeroAnimations(delay, hash) {
     const wrappers = document.querySelectorAll('.page-wrapper');
 
     let scope = wrappers[0];
@@ -1027,44 +1101,55 @@ function initHeroAnimations(delay) {
     });
     tl.from(scope.querySelectorAll(".section.hero-section h1 .line, .section.hero-section .hero-lower-wrapper-inner .line, .container.is--kontakt .line, .container.is--natur .line, .section.is--legal .line"), {
         yPercent: 100,
-        delay: delay + .3,
+        delay: delay,
         stagger: 0.05,
-    },)
+    }, .6)
         .from(scope.querySelectorAll(".section.hero-section .hero-section-img"), {
             scale: 1.1,
             duration: 2.5,
-            ease: "easeInOutQuint",
-            delay: 0.2
+            ease: "easeInOutQuart",
+            delay: delay - 0.5
         }, 0)
-        .from(scope.querySelector(".section.hero-section .kontakt-row"), {
+        .from(scope.querySelectorAll(".section.hero-section .kontakt-row"), {
             opacity: 0,
             y: 50,
             delay: delay,
+            stagger: 0.15,
         }, 0.5)
         .from(scope.querySelector(".section.hero-section .hero-section-small-img"), {
-            opacity: 0,
-            y: 50,
-            delay: delay + .6,
+            // opacity: 0,
+            // y: 50,
+            scale: 1.1,
+            ease: "easeInOutQuart",
+            delay: delay - .3,
+            duration: 2,
         }, 0)
         .from(scope.querySelector(".section.hero-section .news-block"), {
             opacity: 0,
             y: 50,
             delay: delay,
-        }, 0.4)
-
-        .from(scope.querySelectorAll(".section.is--pricing .big-title-style .line"), {
+        }, 0.7)
+    if (hash) {
+        tl.from(scope.querySelectorAll(".section.is--pricing .big-title-style .line"), {
             yPercent: 100,
-            delay: delay + .1,
-            ease: "easeOutQuart",
-            stagger: 0.15,
-        }, 0)
-
-        .from(scope.querySelectorAll(".section.is--pricing .pricing-container > *"), {
-            opacity: 0,
-            y: 50,
             delay: delay,
             stagger: 0.15,
-        }, 0.4)
+
+        }, 0.5)
+    }
+    tl.from(scope.querySelectorAll(".section.is--pricing .pricing-right-wrapper > *"), {
+        opacity: 0,
+        y: 50,
+        delay: delay,
+        stagger: 0.15,
+    }, 0.6)
+
+    tl.from(scope.querySelectorAll(".section.is--pricing .pricing-container img"), {
+        scale: 1.1,
+        ease: "easeInOutQuart",
+        duration: 2,
+        delay: delay - 0.5,
+    }, 0.2)
 
     // gsap.from(scope.querySelectorAll('.hero-title'), {
     // }
@@ -1089,18 +1174,19 @@ function initHomePageAnimation() {
         })
 
 
-        tl.to(scope.querySelector('[data-anim="slow-down-scroll"]'), {
-            yPercent: 50,
-            ease: "power1.in",
-            // onStart: () => {
-            //     gsap.set(scope.querySelector('[data-anim="slow-down-scroll"]'), {
-            //         backgroundColor: 'var(--dark)',
-            //     })
-            // },
+        tl
+            .to(scope.querySelector('[data-anim="slow-down-scroll"]'), {
+                yPercent: 50,
+                ease: "none",
+                // onStart: () => {
+                //     gsap.set(scope.querySelector('[data-anim="slow-down-scroll"]'), {
+                //         backgroundColor: 'var(--dark)',
+                //     })
+                // },
 
-        })
+            })
 
-            .to(scope.querySelector('[data-anim="slow-down-scroll"] .hero-section-img, [data-anim="scroll-down-scroll"] .container.is--hero'), {
+            .to(scope.querySelectorAll('[data-anim="slow-down-scroll"] .container.is--hero h1, [data-anim="slow-down-scroll"] .hero-section-img'), {
                 opacity: 0,
                 ease: "power1.in",
             }, 0)
@@ -1108,7 +1194,7 @@ function initHomePageAnimation() {
     })
 }
 
-function initAppearEffects() {
+function initAppearEffects(delay = 0) {
     const wrappers = document.querySelectorAll('.page-wrapper');
 
     let scope = wrappers[0];
@@ -1132,81 +1218,224 @@ function initAppearEffects() {
     // console.log(upAnimations);
 
     upAnimations.forEach((el) => {
-
         gsap.from(el.querySelectorAll(".line"), {
             y: "100%",
             stagger: 0.05,
             duration: 1.2,
             ease: "easeOutQuart",
+
             scrollTrigger: {
                 trigger: el,
                 start: "top 85%",
-                // markers: true,
             }
         })
 
     })
 }
 function initPreloader() {
-    let spanPreload = document.querySelector(".span-preload");
-    spanPreload.textContent = '0';
-    gsap.to({ val: 0 }, {
-        val: 100,
-        duration: 1,
-        ease: "easeOutQuart",
-        onUpdate: function () {
-            spanPreload.textContent = Math.round(this.targets()[0].val) + '';
-        }
-    });
 
-    gsap.from(".svg-preload path:not(.bigpath)", {
-        x: () => gsap.utils.random(-100, 100),
-        y: () => gsap.utils.random(-100, 100),
-        opacity: 0,
-        ease: "easeOutQuart",
-        duration: 1.2,
-        stagger: 0.08
-    });
 
-    // Animate the glass path only with fade
-    gsap.from(".svg-preload .bigpath", {
-        opacity: 0,
-        duration: 1.2,
-        ease: "easeOutQuart",
-        delay: 0.2
+    // let spanPreload = document.querySelector(".span-preload");
+    // spanPreload.textContent = '0';
+    // gsap.to({ val: 0 }, {
+    //     val: 100,
+    //     duration: 1,
+    //     ease: "easeOutQuart",
+    //     onUpdate: function () {
+    //         spanPreload.textContent = Math.round(this.targets()[0].val) + '';
+    //     }
+    // });
+
+    let mm = gsap.matchMedia();
+    gsap.set(".preload-inner svg", {
+        overflow: "visible",
+    })
+    const tl = gsap.timeline({
+        defaults: {
+            duration: 1.8,
+            ease: "easeOutQuart",
+        },
     });
+    tl.from(".preloader-line1", {
+        transformOrigin: "bottom",
+        scaleY: 0,
+        delay: 0.2,
+    })
+        // .to(".preload-inner", {
+        //     x: "1rem",
+        // }, 0)
+        .fromTo(".preload-inner svg path", {
+            x: -90,
+
+        }, {
+            x: 40,
+            stagger: 0.04,
+
+        }, "<=+.2")
+
+
+
+        // .fromTo(".preload-inner svg path:not(:first-child)", {
+        //     x: () => gsap.utils.random(-100, 100),
+        //     y: () => gsap.utils.random(-100, 100),
+        //     opacity: 0,
+        // }, {
+        //     x: -40,
+        //     y: 0,
+        //     opacity: 1,
+        //     stagger: 0.03,
+        // }, "<=+.2")
+
+
+        .fromTo(".preloader-text-wrapper span", {
+            x: 135,
+
+        }, {
+            x: -24,
+            stagger: .05,
+        }, .2)
+    mm.add("(min-width: 768px)", () => {
+        tl.to(".preload-svg-wrapper > *", {
+            y: -100,
+            duration: 1.1,
+            // opacity: 0,
+            ease: "easeInOutQuart",
+        }, "<=+1.8")
+
+    })
+    mm.add("(max-width: 767px)", () => {
+
+        tl.to(".preload-svg-wrapper > *", {
+            y: -100,
+            duration: 1.1,
+            // opacity: 0,
+            ease: "easeInOutQuart",
+        }, "<=+2")
+
+    })
+    // .to(".preload-wrapper .span-preload, .preload-wrapper svg", {
+    //     yPercent: -100,
+    //     duration: 1.2,
+    //     opacity: 0,
+    // }, "<=+1.8")
+
+    // .to(".preloader-line-wrapper", {
+    //     scaleY: 0,
+    //     transformOrigin: "top",
+    //     duration: 1.2,
+    //     opacity: 0,
+    // }, "<")
+
+    //go back
+
+
+    // .to(".preload-inner svg path", {
+    //     x: -90,
+    //     duration: .9
+    // }, "+=.25")
+
+    // .to(".preloader-text-wrapper span", {
+    //     x: 110,
+    //     duration: .9
+    // }, "<")
+    // .to(".preloader-line-wrapper", {
+    //     scaleY: 0,
+    //     transformOrigin: "top",
+    //     duration: .9
+    // }, "<=+.4")
+    // .to(".preloader-line1", {
+    //     scaleY: 0,
+    //     transformOrigin: "bottom",
+    //     duration: .8
+    // }, "<=+.4")
+
+    // .to(".preloader-line", {
+
+    //     scaleY: 0,
+    //     transformOrigin: "top",
+
+    // })
+
+    // gsap.from(".svg-preload path:not(.bigpath)", {
+    //     x: () => gsap.utils.random(-100, 100),
+    //     y: () => gsap.utils.random(-100, 100),
+    //     opacity: 0,
+    //     ease: "easeOutQuart",
+    //     duration: 1.2,
+    //     stagger: 0.08
+    // });
+
+    // // Animate the glass path only with fade
+    // gsap.from(".svg-preload .bigpath", {
+    //     opacity: 0,
+    //     duration: 1.2,
+    //     ease: "easeOutQuart",
+    //     delay: 0.2
+    // });
     setTimeout(() => {
         document.body.setAttribute('data-loaded', 'true');
 
-        gsap.to(".span-preload", {
-            yPercent: -100,
-            ease: "easeInOutQuart",
-            duration: 1.4,
-            delay: 0,
-            onStart: () => {
-                gsap.set(".preload-inner-white", {
-                    backgroundColor: 'var(--light)',
-                })
-            }
-        })
-        gsap.to(".svg-preload", {
-            yPercent: -60,
-            ease: "easeInOutQuart",
-            duration: 1.4,
-            delay: 0.2
-        })
-    }, 1500);
+        // gsap.to(".span-preload", {
+        //     yPercent: -100,
+        //     ease: "easeInOutQuart",
+        //     duration: 1.4,
+        //     delay: 0,
+        //     onStart: () => {
+        //         gsap.set(".preload-inner-white", {
+        //             backgroundColor: 'var(--light)',
+        //         })
+        //     }
+        // })
+        // gsap.to(".svg-preload", {
+        //     yPercent: -60,
+        //     ease: "easeInOutQuart",
+        //     duration: 1.4,
+        //     delay: 0.2
+        // })
+    }, 1700);
+}
+
+function initCustomLazyLoad() {
+
+    const wrappers = document.querySelectorAll('.page-wrapper');
+
+    let scope = wrappers[0];
+
+    const lazyImages = scope.querySelectorAll('[data-img="lazy"]');
+
+
+    lazyImages.forEach(img => {
+
+        // Backup src/srcset
+        img.dataset.src = img.src;
+        img.dataset.srcset = img.srcset;
+
+        // Replace with dummy
+        img.removeAttribute('src');
+        img.removeAttribute('srcset');
+
+        img.removeAttribute('loading');
+
+    }
+    );
+
+
+    // Now pass only safe images to LazyLoad
+    new LazyLoad({
+        container: scope,
+        threshold: 800,
+
+    }, lazyImages);
 }
 
 
 
-function initScripts(delay) {
+function initScripts(delay, hash) {
     // document.body.setAttribute('data-loaded', 'true');
 
     gsap.set("body", {
         autoAlpha: 1,
     })
-
 
     // Animate all elements with class 'animate-percentage' from 0% to 100% in 1 second using GSAP
     // Start at 0
@@ -1214,7 +1443,7 @@ function initScripts(delay) {
     initPreloader();
     initLenis();
     let mm = gsap.matchMedia();
-    mm.add("(min-width: 992px)", () => {
+    mm.add("(min-width: 768px)", () => {
         initDetectScrollingDirection();
     });
     initAccordionCSS();
@@ -1230,12 +1459,13 @@ function initScripts(delay) {
     initHorizontalModal();
 
     initSplitText();
+    initHeroAnimations(delay, hash);
+    initAppearEffects(delay);
 
-    initAppearEffects();
-    initHeroAnimations(delay);
 
     initHomePageAnimation();
-
+    initScrollToTop();
+    initCustomLazyLoad();
 }
 // Initialize Accordion CSS
 document.addEventListener('DOMContentLoaded', () => {
@@ -1251,7 +1481,8 @@ document.addEventListener('DOMContentLoaded', () => {
     CustomEase.create("wshanim", ".85, 0, 0.03, 1");
 
     const swup = new Swup({
-        plugins: [new SwupParallelPlugin()]
+        plugins: [new SwupParallelPlugin(), new SwupPreloadPlugin()],
+        animateHistoryBrowsing: true,
     });
 
 
@@ -1264,14 +1495,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     swup.hooks.on('page:view', (visit) => {
 
+
         oldScrolltriggers = ScrollTrigger.getAll();
         // oldScrolltriggers.forEach(trigger => {
         //     trigger.kill();
         // });
-        initScripts(1);
+        initScripts(.75, visit.to.hash);
     });
     swup.hooks.on("link:self", (event) => {
-        window.lenis.scrollTo(0);
+        window.lenis.scrollTo(0, {
+            duration: 3,
+            ease: "easeOutQuad",
+        });
+
+
     });
     swup.hooks.on("visit:end", () => {
         // Clean up old ScrollTriggers
@@ -1281,7 +1518,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
-    // swup.hooks.on("animation:in:start", () => {
-    //     window.scrollTo(0, 0);
+
+
+    // document.querySelectorAll('a[href^="/#"]').forEach(link => {
+    //     link.addEventListener('click', function (e) {
+
+    //         const targetId = this.getAttribute('href')
+    //         const target = document.querySelector(targetId)
+
+    //         if (target) {
+    //             e.preventDefault();
+    //             e.stopImmediatePropagation(); // <- This is the key
+
+
+    //             window.lenis.scrollTo(target)
+    //         }
+    //     })
     // })
+    // document.querySelectorAll("a").forEach(link => {
+    //     link.addEventListener('click', (e) => {
+    //         e.preventDefault();
+    //         e.stopImmediatePropagation(); // <- This is the key
+    //         console.log("Blocked navigation.");
+    //     }); // <-- Use capture phase, just in case
+    // });
+
 });

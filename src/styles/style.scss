@@ -100,6 +100,9 @@
     height: auto;
 }
 
+// .lenis.lenis-smooth {
+//     scroll-behavior: auto;
+// }
 
 .lenis:not(.lenis-autoToggle).lenis-stopped {
     overflow: clip;
@@ -456,6 +459,18 @@ button.button-main,
 
                 a {
                     transition: opacity 0.3s ease;
+                    font-size: 1rem;
+
+                    @media (hover: none) and (max-width: 767px) {
+                        padding-top: .4em;
+
+                        &:last-child {
+                            padding-bottom: .3em;
+                        }
+
+                    }
+
+
 
                     &:hover {
                         opacity: 1;
@@ -828,7 +843,7 @@ button.button-main,
 .pages {
     display: grid;
     width: 100%;
-    min-height: 100vh;
+    min-height: 100dvh;
     background-color: white;
     // overflow: hidden;
 
@@ -839,7 +854,7 @@ button.button-main,
         grid-column: 1;
         z-index: 2;
         overflow-y: auto;
-        height: 100svh;
+        height: 100dvh;
         background-color: var(--light);
 
         &+.page-wrapper {
@@ -849,32 +864,70 @@ button.button-main,
 }
 
 html {
-    // --wsh-anim: var(--ease-in-out-quint);
-    // --wsh-anim2: cubic-bezier(.73, .16, .19, .97);
-    --wsh-anim: cubic-bezier(.85, 0, 0.03, 1);
-    --wsh-anim2: var(--wsh-anim);
-    --o3: cubic-bezier(.215, .61, .355, 1);
+    // --wsh-anim: cubic-bezier(.85, 0, 0.03, 1);
+    // --wsh-anim2: var(--wsh-anim);
+
+    //BACKUP 2
+
+    // transition: clip-path 2s var(--wsh-anim);
+    // transition: transform 1.3s var(--wsh-anim2) .7s;
+    // 3
+    // --wsh-anim: cubic-bezier(.67, 0, 0.0, 1);
+    // --wsh-anim2: cubic-bezier(.75, 0, 0.0, 1);
+
+    --wsh-anim: cubic-bezier(.75, 0, 0, .9);
+    --wsh-anim2: cubic-bezier(.85, 0.1, 0.15, 1);
+    --custom-easing: linear(0, 0.0008 4.07%, 0.0053 9.73%, 0.0125 14.27%, 0.0227 18.33%, 0.0358 21.93%,
+            0.0507 24.93%, 0.0724 28.12%, 0.0974 30.81%, 0.1235 32.77%, 0.1471 34.19%,
+            0.1748 35.49%, 0.2059 36.6%, 0.2686 38.13%, 0.4341 41.05%, 0.4795 42.32%,
+            0.5183 43.88%, 0.5464 45.41%, 0.5704 47.13%, 0.6322 53.28%, 0.6783 56.85%,
+            0.7276 59.77%, 0.8377 65.33%, 0.8848 68.38%, 0.9133 70.88%, 0.9369 73.68%,
+            0.9565 76.86%, 0.9722 80.45%, 0.9844 84.55%, 0.9931 89.15%, 0.9983 94.29%, 1);
+
+    --custom-easing2: linear(0, 0.0014 5.33%, 0.0066 10.87%, 0.0158 16.09%, 0.026 19.87%, 0.044 24.51%,
+            0.0649 28.33%, 0.0823 30.77%, 0.1106 33.92%, 0.1624 37.82%, 0.2221 40.9%,
+            0.3028 43.84%, 0.4386 48%, 0.4785 49.56%, 0.513 51.21%, 0.5424 52.96%,
+            0.5684 54.91%, 0.6182 59.92%, 0.6407 61.87%, 0.6643 63.51%, 0.69 64.93%,
+            0.741 66.96%, 0.8596 70.46%, 0.8891 71.76%, 0.9137 73.3%, 0.9347 75.16%,
+            0.9524 77.37%, 0.9671 79.97%, 0.979 83.01%, 0.9882 86.51%, 0.9948 90.5%,
+            0.9987 94.99%, 1);
+
+    --custom-easing3FINAL: linear(0, 0.0014 5.33%, 0.0066 10.87%, 0.0158 16.09%, 0.026 19.87%, 0.0365 22.77%,
+            0.044 24.51%, 0.0649 28.33%, 0.0823 30.77%, 0.1117 33.92%, 0.1106 33.92%,
+            0.1385 36.18%, 0.1624 37.82%, 0.1907 39.42%, 0.2221 40.9%, 0.2566 42.26%,
+            0.3037 43.84%, 0.3028 43.84%, 0.3923 46.49%, 0.4386 48%, 0.4785 49.56%,
+            0.513 51.21%, 0.5424 52.96%, 0.5684 54.91%, 0.5876 56.66%, 0.6182 59.92%,
+            0.6407 61.87%, 0.6643 63.51%, 0.69 64.93%, 0.714 65.99%, 0.741 66.96%,
+            0.8293 69.46%, 0.8596 70.46%, 0.8891 71.76%, 0.9137 73.3%, 0.9347 75.16%,
+            0.9524 77.37%, 0.9671 79.97%, 0.979 83.01%, 0.9882 86.51%, 0.9948 90.5%,
+            0.9987 94.99%, 1);
     --o6: cubic-bezier(.19, 1, .22, 1);
     --io6: cubic-bezier(.16, 1, .3, 1);
 }
 
+
+#swup {
+    transition: clip-path 2s var(--custom-easing3FINAL);
+    clip-path: inset(0%);
+}
+
 html.is-changing .transition-fade {
-    transition: clip-path 2.1s var(--wsh-anim);
+    // transition: clip-path 31s var(--wsh-anim);
     clip-path: inset(0%);
 
     .overlay-page {
-        transition: transform 1.4s var(--wsh-anim2) .7s;
-        transform: translateY(-100%);
+        transition: transform 1.8s var(--wsh-anim2) .5s;
+        transform: translateY(-101%);
     }
 }
 
 .transition-fade.is-next-container {
-    clip-path: inset(80% 12% 20% 12%) !important;
+    clip-path: inset(83% 12% 17% 12%) !important;
 
 
     .overlay-page {
 
-        transform: translateY(-15%) !important;
+        transform: translateY(-5%) !important;
     }
 }
 
@@ -888,53 +941,30 @@ html.is-changing .transition-fade {
 
 [data-loaded="false"] {
 
-    // opacity: 0;
-    // pointer-events: none;
+
 
 
     #swup {
-        clip-path: inset(80% 12% 20% 12%);
+        clip-path: inset(83% 12% 17% 12%);
 
 
         .overlay-page {
 
-            transform: translateY(-15%);
+            transform: translateY(-5%);
         }
     }
 }
 
-.preload-svg-overlay {
-    animation: preload 1.4s var(--wsh-anim2) forwards;
-}
-
-@keyframes preload {
-
-    from {
-        transform: translateY(0);
-
-    }
-
-    to {
-        transform: translateY(-100%);
-
-    }
-
-}
-
-#swup {
-    transition: clip-path 2.1s var(--wsh-anim);
-    clip-path: inset(0%);
-}
 
 
 
 .overlay-page {
     background-color: var(--dark);
-    transform: translateY(-100%);
+    transform: translateY(-101%);
     pointer-events: none;
     position: fixed;
     z-index: 30;
-    transition: transform 1.4s var(--wsh-anim2) .7s;
+    transition: transform 1.8s var(--wsh-anim2) .5s;
 }
 
 /* Define the styles for the unloaded pages */
