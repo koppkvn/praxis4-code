@@ -834,6 +834,23 @@ button.button-main,
 
 
 
+.modal-close-btn {
+
+    .modal-close-btn-inner {
+        transition: all .3s var(--ease-out-quart);
+    }
+
+    &:hover {
+
+
+
+        .modal-close-btn-inner {
+            rotate: 90deg;
+            scale: 1.1;
+        }
+    }
+}
+
 
 // SWUP TRANSITION START
 

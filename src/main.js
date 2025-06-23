@@ -532,7 +532,7 @@ function initOpenVerticalModal() {
     gsap.set(".modal-close-btn", {
         yPercent: 200,
         autoAlpha: 0,
-        rotate: 180,
+        // rotate: 180,
     })
 
     const duration = .7;
@@ -575,17 +575,24 @@ function initOpenVerticalModal() {
 
                 })
 
+                // .set(".modal-vertical-content-bg", {
+                //     yPercent: 100,
+                // })
+
+
                 .set(modal.querySelector(".modal-close-btn"), {
-                    rotate: 90,
-                    autoAlpha: 0,
+                    // rotate: 0,
+                    // autoAlpha: 0,
                     yPercent: 200,
                 })
+                // .to(modal.querySelector(".modal-vertical-content-bg"), {
+                //     yPercent: 0,
+                //     duration: duration - .1,
+                // }, 0)
                 .to(modal.querySelector(".modal-vertical-content-inner"), {
                     clipPath: "inset(0% 0 0 0)",
-                    ease: ease,
                     duration: duration,
                 }, 0)
-
                 .to(modal.querySelector(".modal-v-img-c"), {
                     autoAlpha: 1,
                     ease: ease,
@@ -595,9 +602,9 @@ function initOpenVerticalModal() {
                 .to(modal.querySelectorAll(".modal-vertical-content-inner .line"), {
                     yPercent: 0,
                     ease: ease,
-                    duration: duration,
-                    stagger: 0.02,
-                }, 0.2)
+                    duration: duration + .2,
+                    stagger: 0.05,
+                }, 0.4)
 
                 .to(modal.querySelector(".modal-backdrop"), {
                     autoAlpha: 1,
@@ -608,8 +615,28 @@ function initOpenVerticalModal() {
                 .to(modal.querySelector(".modal-close-btn"), {
                     yPercent: 0,
                     rotate: 0,
-                    autoAlpha: 1,
+
                     ease: ease,
+
+                    onStart: (e) => {
+                        gsap.set(modal.querySelector(".modal-close-btn"), {
+                            autoAlpha: 1,
+                        })
+
+                    }
+                }, 0.5)
+                .to(modal.querySelector(".modal-close-btn"), {
+                    yPercent: 0,
+                    rotate: 0,
+
+                    ease: ease,
+
+                    onStart: (e) => {
+                        gsap.set(modal.querySelector(".modal-close-btn"), {
+                            autoAlpha: 1,
+                        })
+
+                    }
                 }, 0.5)
         });
     });
@@ -649,8 +676,13 @@ function initOpenVerticalModal() {
                     duration: duration,
                 }, 0)
 
+                // .to(modal.querySelector(".modal-vertical-content-bg"), {
+                //     yPercent: 100,
+                //     ease: ease,
+                //     duration: duration - .5,
+                // }, 0)
+
                 .to(modal.querySelector(".modal-close-btn"), {
-                    rotate: 90,
                     autoAlpha: 0,
                     ease: ease,
                 }, 0)
@@ -1199,6 +1231,31 @@ function initAppearEffects(delay = 0) {
 
     let scope = wrappers[0];
 
+    document.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
+        const wrapper = document.createElement("div");
+        wrapper.style.overflow = "hidden";
+        wrapper.classList.add("mask-up-wrapper");
+
+        el.parentNode.insertBefore(wrapper, el);
+        wrapper.appendChild(el);
+    });
+
+    // STEP 2: Animate inside lines
+    document.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
+        gsap.from(el, {
+            yPercent: 100,
+            duration: 1.2,
+            ease: "easeOutQuart",
+
+            scrollTrigger: {
+                trigger: el,
+                start: "top 85%",
+            }
+
+        });
+    });
+
+
     let upAnimations = scope.querySelectorAll('[data-anim="lines-up"]');
 
 
@@ -1392,7 +1449,10 @@ function initPreloader() {
         //     duration: 1.4,
         //     delay: 0.2
         // })
-    }, 1700);
+    },
+        // 1700
+        0
+    );
 }
 
 function initCustomLazyLoad() {
@@ -1489,7 +1549,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    initScripts(2.4);
+    // initScripts(2.4);
+    initScripts(0);
 
     swup.hooks.on('page:view', (visit) => {
         initScripts(.75, visit.to.hash);
