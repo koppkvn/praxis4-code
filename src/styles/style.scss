@@ -753,27 +753,27 @@ button.button-main,
     pointer-events: all;
 }
 
-.google-maps {
-    .w-embed {
-        width: 100%;
-        height: 100%;
-    }
+// iframe.google-maps {
 
-    iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
-}
+//     width: 100%;
+//     height: 100%;
+//     border: none;
+// }
 
 .underline-link {
     text-decoration: none;
     position: relative;
 }
 
+.accordion-css__item-p a {
+    text-decoration: none;
+    position: relative;
+}
+
 .underline-link::before,
 .underline-link.is--alt::before,
-.underline-link.is--alt::after {
+.underline-link.is--alt::after,
+.accordion-css__item-p a::before {
     content: "";
     position: absolute;
     bottom: -0.125rem;
@@ -786,7 +786,8 @@ button.button-main,
     transform: scaleX(0) rotate(0.001deg);
 }
 
-.underline-link:hover::before {
+.underline-link:hover::before,
+.accordion-css__item-p a:hover::before {
     transform-origin: left;
     transform: scaleX(1) rotate(0.001deg);
 }

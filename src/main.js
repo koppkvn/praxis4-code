@@ -51,7 +51,7 @@ function initLenis() {
 
     window.lenis = new Lenis({
         wrapper: scope,
-        content: scope.children[0],
+        content: scope.querySelector('.page-content'),
 
     });
 
@@ -374,10 +374,7 @@ function initNavigation() {
         }
         );
     });
-    function openNav() {
-        bigNav.classList.add('is--open');
-        window.lenis.stop();
-    }
+
 
     function closeNav() {
         header.classList.toggle('is--open');
@@ -520,16 +517,16 @@ function initOpenVerticalModal() {
         element.textContent = formattedDate;
     });
 
-    gsap.set(".modal-vertical-content-inner", {
+    gsap.set(modal.querySelector(".modal-vertical-content-inner"), {
         clipPath: "inset(100% 0 0 0)",
     })
 
-    gsap.set(".modal-backdrop", {
+    gsap.set(modal.querySelector(".modal-vertical-container .modal-backdrop"), {
         autoAlpha: 0,
     })
 
 
-    gsap.set(".modal-close-btn", {
+    gsap.set(modal.querySelector(".modal-vertical-container .modal-close-btn"), {
         yPercent: 200,
         autoAlpha: 0,
         // rotate: 180,
@@ -570,15 +567,23 @@ function initOpenVerticalModal() {
                 .set(modal.querySelectorAll(".modal-vertical-content-inner .line"), {
                     yPercent: 100,
                 })
-                .set(".modal-v-img-c", {
+                .set(modal.querySelector(".modal-vertical-container .modal-v-img-c"), {
                     autoAlpha: 0,
 
                 })
 
+                .set(modal.querySelector(".modal-backdrop"), {
+                    autoAlpha: 0,
+
+                }, 0)
+
+
                 // .set(".modal-vertical-content-bg", {
                 //     yPercent: 100,
                 // })
-
+                .set(modal.querySelector(".modal-vertical-content-inner"), {
+                    clipPath: "inset(100% 0 0 0)",
+                })
 
                 .set(modal.querySelector(".modal-close-btn"), {
                     // rotate: 0,
@@ -732,6 +737,7 @@ function initHorizontalModal() {
         el.querySelector(".modal-h-number").textContent = number;
     });
 
+    let mm = gsap.matchMedia();
 
     let openTl, closeTl;
     openButtons.forEach(button => {
@@ -745,57 +751,79 @@ function initHorizontalModal() {
             if (!modal) return;
             modal.querySelector('.modal-h-scroll-wrapper').scrollTop = 0;
             closeTl?.kill(); // Kill the close timeline if it exists
-            openTl = gsap.timeline({
-                defaults: {
-                    duration: 1.2,
-                    ease: "easeOutQuart",
-                }
-            })
-                .set(modal, {
-                    autoAlpha: 1,
-                    pointerEvents: 'auto',
+
+            openTl = gsap.timeline({ defaults: { duration: 1.2, ease: "easeOutQuart" } });
+
+            openTl.set(modal, {
+                autoAlpha: 1,
+                pointerEvents: 'auto',
+            });
+
+
+
+            if (window.innerWidth >= 768) {
+                openTl
+                    .set(modal.querySelector(".modal-horizontal-content-inner"), {
+                        clipPath: "inset(0% 0% 0% 100%)",
+                    }, 0)
+                    .set(modal.querySelector(".modal-close-btn"), {
+                        rotate: 90,
+                        autoAlpha: 0,
+                        xPercent: 200,
+                        yPercent: -50,
+                    }, 0)
+                    .to(modal.querySelector(".modal-close-btn"), {
+                        xPercent: 0,
+                        rotate: 0,
+                        autoAlpha: 1,
+                        duration: .7
+                    }, 0.5);
+
+            } else {
+
+                openTl.set(modal.querySelector(".modal-horizontal-content-inner"), {
+                    clipPath: "inset(100% 0 0 0)",
+
                 })
 
-                .set(modal.querySelector(".modal-horizontal-content-inner"), {
-                    clipPath: "inset(0% 0% 0% 100%)",
+                    .set(modal.querySelector(".modal-close-btn"), {
+                        rotate: 90,
+                        autoAlpha: 0,
+                        yPercent: 200,
+                    }, 0)
+
+                    .to(modal.querySelector(".modal-close-btn"), {
+                        yPercent: 0,
+                        rotate: 0,
+                        autoAlpha: 1,
+                        duration: .7
+                    }, 0.5)
+            }
 
 
-                })
-
-                .set(modal.querySelector(".modal-backdrop"), {
-                    autoAlpha: 0,
-                })
+            openTl.set(modal.querySelector(".modal-backdrop"), {
+                autoAlpha: 0,
+            }, 0)
                 .set(modal.querySelectorAll(".modal-horizontal-content-inner .line"), {
                     yPercent: 101,
-                })
+                }, 0)
                 .set(modal.querySelector(".modal-h-img-wrapper"), {
                     autoAlpha: 0,
 
-                })
-                // .set(modal.querySelector(".modal-h-upper-right"), {
-                //     autoAlpha: 0,
+                }, 0)
 
-                // })
 
                 .set(modal.querySelector(".decoration-line"), {
                     scaleX: 0,
                     transformOrigin: "right center",
-                })
+                }, 0)
 
-                .set(modal.querySelector(".modal-close-btn"), {
-                    rotate: 90,
-                    autoAlpha: 0,
-                    xPercent: 200,
-                    yPercent: -50,
-                })
                 .to(modal.querySelector(".modal-horizontal-content-inner"), {
                     clipPath: "inset(0% 0% 0% 0%)",
                     duration: .7
                 }, 0)
 
-                // .to(modal.querySelector(".modal-h-upper-right"), {
-                //     autoAlpha: 1,
-                // }, 0)
+
 
                 .to(modal.querySelector(".modal-h-img-wrapper"), {
                     autoAlpha: 1,
@@ -811,16 +839,12 @@ function initHorizontalModal() {
                     autoAlpha: 1,
                 }, 0)
 
-                .to(modal.querySelector(".modal-close-btn"), {
-                    xPercent: 0,
-                    rotate: 0,
-                    autoAlpha: 1,
-                    duration: .7
-                }, 0.5)
+
                 .to(modal.querySelector(".decoration-line"), {
                     scaleX: 1,
 
                 }, 0.2)
+
         });
     });
 
@@ -844,19 +868,33 @@ function initHorizontalModal() {
                 .set(modal, {
                     pointerEvents: 'none',
                 })
-                .to(modal.querySelector(".modal-horizontal-content-inner"), {
+
+            mm.add("(min-width: 768px)", () => {
+                closeTl.to(modal.querySelector(".modal-horizontal-content-inner"), {
                     clipPath: "inset(0% 0% 0% 100%)",
                 }, 0)
 
-                .to(modal.querySelector(".modal-backdrop"), {
-                    autoAlpha: 0,
+
+
+            })
+
+            mm.add("(max-width: 767px)", () => {
+                closeTl.to(modal.querySelector(".modal-horizontal-content-inner"), {
+                    clipPath: "inset(100% 0% 0% 0%)",
                 }, 0)
 
+
+            })
+
+            closeTl.to(modal.querySelector(".modal-backdrop"), {
+                autoAlpha: 0,
+            }, 0)
                 .to(modal.querySelector(".modal-close-btn"), {
-                    rotate: 90,
+                    rotate: 0,
                     autoAlpha: 0,
                     duration: .7
                 }, 0)
+
         });
     })
 
@@ -1021,22 +1059,32 @@ function initStandorteKontakt() {
         el.classList.add('active');
     })
 
-    // ScrollTrigger.create({
-    //     trigger: '.section.is--map', // change to your section selector
-    //     start: 'top 80%',
-    //     once: true,
-    //     markers: true,
-    //     onEnter: () => {
-    //         document.querySelectorAll('.col-maps iframe').forEach(iframe => {
-    //             // force load by resetting the src (it reloads even if same src)
+
+    // new LazyLoad({
+    //     elements_selector: ".col-maps iframe",
+    //     container: scope,
+    //     treshold: 1200
+    // })
 
 
-
-    //             // const src = iframe.getAttribute('src');
-    //             iframe.setAttribute('loading', "eager");
-    //         });
-    //     }
-    // });
+    ScrollTrigger.create({
+        trigger: '.section.is--map', // change to your section selector
+        start: 'top bottom',
+        once: true,
+        onEnter: () => {
+            document.querySelectorAll('.col-maps .maps-inner-wrapper').forEach(iframeContainer => {
+                const src = iframeContainer.getAttribute('data-src'); // Get the data-src attribute
+                const iframe = document.createElement('iframe');
+                iframe.src = src;
+                // Optionally, set other attributes for styling or security
+                iframe.width = "100%";
+                iframe.height = "100%";
+                iframe.style.border = "none";
+                // Append the iframe to the container
+                iframeContainer.appendChild(iframe);
+            });
+        }
+    });
 
 
     buttons.forEach(btn => {
@@ -1166,7 +1214,11 @@ function initHeroAnimations(delay, hash) {
             yPercent: 100,
             delay: delay,
             stagger: 0.15,
+            onStart: () => {
 
+                scope.querySelector(".pricing-img-wrapper video")?.play();
+
+            }
         }, 0.5)
     }
     tl.from(scope.querySelectorAll(".section.is--pricing .pricing-right-wrapper > *"), {
@@ -1486,6 +1538,46 @@ function initCustomLazyLoad() {
         threshold: 800,
 
     }, lazyImages);
+
+    if (scope.querySelector(".lazy-video")) {
+        const lazyLoadInstance = new LazyLoad({
+            container: scope,
+            elements_selector: ".lazy-video",
+            callback_loaded: (el) => {
+                console.log("Video lazy-loaded:", el);
+            }
+        });
+
+
+        window.addEventListener("touchstart", () => {
+            scope.querySelector(".lazy-video").play();
+        }, { once: true });
+
+
+        ScrollTrigger.create({
+            trigger: scope.querySelector(".lazy-video"),
+            start: "top bottom",
+            end: "bottom top",
+            onEnter: (self) => {
+                self.trigger.play();
+            },
+            onLeave: (self) => {
+                self.trigger.pause();
+            },
+            onEnterBack: (self) => {
+                self.trigger.play();
+            },
+            onLeaveBack: (self) => {
+                self.trigger.pause();
+            }
+        });
+    }
+
+
+
+
+
+
 }
 
 
@@ -1543,7 +1635,7 @@ document.addEventListener('DOMContentLoaded', () => {
     CustomEase.create("wshanim", ".85, 0, 0.03, 1");
 
     const swup = new Swup({
-        plugins: [new SwupParallelPlugin(), new SwupPreloadPlugin()],
+        plugins: [new SwupParallelPlugin(), new SwupPreloadPlugin(), new SwupDebugPlugin()],
         animateHistoryBrowsing: true,
     });
 
