@@ -168,6 +168,7 @@ function initMarqueeImageLoaded() {
         // const imagePromises = Array.from(images).map(img => img.decode().catch(() => { }));
         const imagePromises = Array.from(images).map(img => {
             if (img.complete) {
+
                 return Promise.resolve();
             }
             return new Promise(resolve => {
@@ -177,13 +178,22 @@ function initMarqueeImageLoaded() {
         });
 
         Promise.all(imagePromises).then(() => {
-            initMarquee(marquee, marqueeContent, marqueeScroll);
+
+            console.log("CEST PARTI");
+
+            initMarquee();
         });
     });
 }
 
-function initMarquee(marquee, marqueeContent, marqueeScroll) {
+function initMarquee() {
 
+    const wrappers = document.querySelectorAll('.page-wrapper');
+    let scope = wrappers[0];
+    if (!scope.querySelector('[data-marquee-scroll-direction-target]')) return; // Exit if no marquee elements found
+    const marquee = scope.querySelector('[data-marquee-scroll-direction-target]');
+    const marqueeContent = marquee.querySelector('[data-marquee-collection-target]');
+    const marqueeScroll = marquee.querySelector('[data-marquee-scroll-target]');
     console.log("INITING MARQUEE");
 
     // Get data attributes
@@ -363,10 +373,21 @@ function initNavigation() {
 
     linksNav.forEach(link => {
         link.addEventListener('click', (e) => {
+            const currentURL = window.location.origin + window.location.pathname;
+            const clickedURL = new URL(link.href);
+
+            const isSamePage = clickedURL.origin === window.location.origin &&
+                clickedURL.pathname === window.location.pathname;
+
+            if (isSamePage) {
+                closeNav();
+            }
+            // If the link is an anchor to the same page, closeNav()
+
             // e.preventDefault(); // Prevent default link behavior
             // const href = link.getAttribute('href'); // Get the href attribute
             // if (href) {
-            closeNav(); // Close the navigation
+            // closeNav(); // Close the navigation
             // setTimeout(() => {
             //     window.location.href = href; // Navigate to the link after closing
             // }, 300); // Delay to allow closing animation to complete
@@ -449,6 +470,9 @@ function initSplitText() {
 
 
 
+
+
+
     const richTextBlocks = scope.querySelectorAll('[data-split="rich"]');
 
     richTextBlocks.forEach(block => {
@@ -519,6 +543,7 @@ function initOpenVerticalModal() {
 
     gsap.set(modal.querySelector(".modal-vertical-content-inner"), {
         clipPath: "inset(100% 0 0 0)",
+        willChange: "clip-path",
     })
 
     gsap.set(modal.querySelector(".modal-vertical-container .modal-backdrop"), {
@@ -587,7 +612,7 @@ function initOpenVerticalModal() {
 
                 .set(modal.querySelector(".modal-close-btn"), {
                     // rotate: 0,
-                    // autoAlpha: 0,
+                    autoAlpha: 0,
                     yPercent: 200,
                 })
                 // .to(modal.querySelector(".modal-vertical-content-bg"), {
@@ -716,6 +741,10 @@ function initHorizontalModal() {
 
     const closeButtons = scope.querySelectorAll('[data-modal-horizontal-close]');
 
+    gsap.set(scope.querySelectorAll('.modal-horizontal-content-inner'), {
+        willChange: "clip-path",
+    })
+
     const titles = scope.querySelectorAll('.modal-h-big-title');
     titles.forEach(title => {
         if (title) {
@@ -735,6 +764,8 @@ function initHorizontalModal() {
     modals.forEach((el, i) => {
         const number = `(${String(i + 1).padStart(2, '0')})`;
         el.querySelector(".modal-h-number").textContent = number;
+
+
     });
 
     let mm = gsap.matchMedia();
@@ -1068,20 +1099,23 @@ function initStandorteKontakt() {
 
 
     ScrollTrigger.create({
-        trigger: '.section.is--map', // change to your section selector
-        start: 'top bottom',
+        trigger: scope.querySelector('.section.is--kontakt'), // change to your section selector
+        start: 'center top',
+        // markers: true,
         once: true,
         onEnter: () => {
-            document.querySelectorAll('.col-maps .maps-inner-wrapper').forEach(iframeContainer => {
-                const src = iframeContainer.getAttribute('data-src'); // Get the data-src attribute
-                const iframe = document.createElement('iframe');
-                iframe.src = src;
-                // Optionally, set other attributes for styling or security
-                iframe.width = "100%";
-                iframe.height = "100%";
-                iframe.style.border = "none";
-                // Append the iframe to the container
-                iframeContainer.appendChild(iframe);
+            document.querySelectorAll('.col-maps .maps-inner-wrapper').forEach((iframeContainer, index) => {
+                setTimeout(() => {
+                    const src = iframeContainer.getAttribute('data-src');
+                    const iframe = document.createElement('iframe');
+                    iframe.src = src;
+                    iframe.width = "100%";
+                    iframe.height = "100%";
+                    iframe.style.border = "none";
+                    iframe.loading = "lazy"; // Just in case
+                    iframeContainer.appendChild(iframe);
+
+                }, index * 500); // 500ms delay between each iframe
             });
         }
     });
@@ -1103,11 +1137,11 @@ function initStandorteKontakt() {
             anreiseButtons.forEach(btn => {
                 btn.parentElement.classList.remove('active');
             })
-            // gsap.set("[data-location].active", {
-            //     clipPath: "inset(0% 100% 0% 0%)",
-            // })
-            gsap.set(`[data-location="${location}"]`, {
+            gsap.set("[data-location].active", {
                 clipPath: "inset(0% 100% 0% 0%)",
+            })
+            gsap.set(`[data-location="${location}"]`, {
+                clipPath: "inset(0% 0% 0% 0%)",
             })
             gsap.set("[data-location].active", {
                 clipPath: "inset(0% 0% 0% 0%)",
@@ -1179,11 +1213,12 @@ function initHeroAnimations(delay, hash) {
             ease: "easeOutQuart",
         },
     });
-    tl.from(scope.querySelectorAll(".section.hero-section h1 .line, .section.hero-section .hero-lower-wrapper-inner .line, .container.is--kontakt .line, .container.is--natur .line, .section.is--legal .line"), {
-        yPercent: 100,
-        delay: delay,
-        stagger: 0.05,
-    }, .6)
+    tl
+        .from(scope.querySelectorAll(".section.hero-section h1 .line, .section.hero-section .hero-lower-wrapper-inner .line, .container.is--kontakt .line, .container.is--natur .header-container-natur .line, .section.is--legal .line"), {
+            yPercent: 100,
+            delay: delay,
+            stagger: 0.05,
+        }, .6)
         .from(scope.querySelectorAll(".section.hero-section .hero-section-img"), {
             scale: 1.1,
             duration: 2.5,
@@ -1216,8 +1251,8 @@ function initHeroAnimations(delay, hash) {
             stagger: 0.15,
             onStart: () => {
 
-                scope.querySelector(".pricing-img-wrapper video")?.play();
 
+                scope.querySelector(".pricing-img-wrapper video")?.play();
             }
         }, 0.5)
     }
@@ -1296,7 +1331,7 @@ function initAppearEffects(delay = 0) {
     document.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
         gsap.from(el, {
             yPercent: 100,
-            duration: 1.2,
+            duration: .8,
             ease: "easeOutQuart",
 
             scrollTrigger: {
@@ -1342,74 +1377,115 @@ function initAppearEffects(delay = 0) {
     })
 }
 function initPreloader() {
+    let wordsElement = document.querySelectorAll('.preload-wrapper [data-split="words"]');
+    console.log(wordsElement);
+
+    wordsElement.forEach(target => {
+        let splitInstance = new SplitText(target, {
+            type: "words",
+            mask: "words",
+            wordsClass: "word",
+        });
+    });
 
 
-    // let spanPreload = document.querySelector(".span-preload");
-    // spanPreload.textContent = '0';
-    // gsap.to({ val: 0 }, {
-    //     val: 100,
-    //     duration: 1,
-    //     ease: "easeOutQuart",
-    //     onUpdate: function () {
-    //         spanPreload.textContent = Math.round(this.targets()[0].val) + '';
-    //     }
-    // });
+    let spanPreload = document.querySelector(".preload-span-number");
+    spanPreload.textContent = '00';
+    gsap.to({ val: 0 }, {
+        val: 100,
+        duration: 2,
+        ease: "easeOutQuart",
+        onUpdate: function () {
+            spanPreload.textContent = Math.round(this.targets()[0].val) + '';
+        }
+    });
 
     let mm = gsap.matchMedia();
-    gsap.set(".preload-inner svg", {
-        overflow: "visible",
+    gsap.set(".preload-svg-wrapper", {
+        autoAlpha: 1
     })
     const tl = gsap.timeline({
         defaults: {
             duration: 1.8,
             ease: "easeOutQuart",
         },
-    });
-    tl.from(".preloader-line1", {
-        transformOrigin: "bottom",
-        scaleY: 0,
-        delay: 0.2,
     })
-        // .to(".preload-inner", {
-        //     x: "1rem",
-        // }, 0)
-        .fromTo(".preload-inner svg path", {
-            x: -90,
+        .set(".preload-inner .preload-inner-white", {
+            yPercent: -100,
+            duration: 1,
+            // delay: .5
+        })
 
-        }, {
-            x: 40,
-            stagger: 0.04,
+        .from(".preload-wrapper svg", {
+            autoAlpha: 0,
+            duration: .4
+        }, 0
+        )
+        .from(".preload-inner", {
+            x: "7rem",
+            ease: "easeInOutQuart",
+            delay: .3
+        }, 0
+        )
 
-        }, "<=+.2")
+        .from(".preloader-line-wrapper", {
+            scaleY: 0,
+        }, 1.2)
+
+        .from(".preload-wrapper .word", {
+            yPercent: 100,
+            stagger: .08
+        }, .9)
+
+    // tl.from(".preloader-line1", {
+    //     transformOrigin: "bottom",
+    //     scaleY: 0,
+    //     delay: 0.2,
+    // })
+    //     // .to(".preload-inner", {
+    //     //     x: "1rem",
+    //     // }, 0)
+    //     .fromTo(".preload-inner svg path", {
+    //         x: -90,
+
+    //     }, {
+    //         x: 40,
+    //         stagger: 0.04,
+
+    //     }, "<=+.2")
 
 
 
-        // .fromTo(".preload-inner svg path:not(:first-child)", {
-        //     x: () => gsap.utils.random(-100, 100),
-        //     y: () => gsap.utils.random(-100, 100),
-        //     opacity: 0,
-        // }, {
-        //     x: -40,
-        //     y: 0,
-        //     opacity: 1,
-        //     stagger: 0.03,
-        // }, "<=+.2")
+    // .fromTo(".preload-inner svg path:not(:first-child)", {
+    //     x: () => gsap.utils.random(-100, 100),
+    //     y: () => gsap.utils.random(-100, 100),
+    //     opacity: 0,
+    // }, {
+    //     x: -40,
+    //     y: 0,
+    //     opacity: 1,
+    //     stagger: 0.03,
+    // }, "<=+.2")
 
 
-        .fromTo(".preloader-text-wrapper span", {
-            x: 135,
+    // .fromTo(".preloader-text-wrapper span", {
+    //     x: 135,
 
-        }, {
-            x: -24,
-            stagger: .05,
-        }, .2)
+    // }, {
+    //     x: -24,
+    //     stagger: .05,
+    // }, .2)
+
+
+
+
     mm.add("(min-width: 768px)", () => {
         tl.to(".preload-svg-wrapper > *", {
             y: -100,
             duration: 1.1,
             // opacity: 0,
             ease: "easeInOutQuart",
-        }, "<=+1.8")
+        }, "<=+1.9")
 
     })
     mm.add("(max-width: 767px)", () => {
@@ -1419,9 +1495,24 @@ function initPreloader() {
             duration: 1.1,
             // opacity: 0,
             ease: "easeInOutQuart",
-        }, "<=+2")
+        }, "<=+1.9")
 
     })
+
+
+    tl.to(".preload-span-number", {
+        yPercent: -100,
+        duration: 1.1,
+
+    }, "<+=.4")
+
+        .to({}, {
+            onStart: () => {
+                document.body.setAttribute('data-loaded', 'true');
+            }
+        }, "<-=.7")
+
+
     // .to(".preload-wrapper .span-preload, .preload-wrapper svg", {
     //     yPercent: -100,
     //     duration: 1.2,
@@ -1481,30 +1572,26 @@ function initPreloader() {
     //     ease: "easeOutQuart",
     //     delay: 0.2
     // });
-    setTimeout(() => {
-        document.body.setAttribute('data-loaded', 'true');
 
-        // gsap.to(".span-preload", {
-        //     yPercent: -100,
-        //     ease: "easeInOutQuart",
-        //     duration: 1.4,
-        //     delay: 0,
-        //     onStart: () => {
-        //         gsap.set(".preload-inner-white", {
-        //             backgroundColor: 'var(--light)',
-        //         })
-        //     }
-        // })
-        // gsap.to(".svg-preload", {
-        //     yPercent: -60,
-        //     ease: "easeInOutQuart",
-        //     duration: 1.4,
-        //     delay: 0.2
-        // })
-    },
-        // 1700
-        0
-    );
+
+    // gsap.to(".span-preload", {
+    //     yPercent: -100,
+    //     ease: "easeInOutQuart",
+    //     duration: 1.4,
+    //     delay: 0,
+    //     onStart: () => {
+    //         gsap.set(".preload-inner-white", {
+    //             backgroundColor: 'var(--light)',
+    //         })
+    //     }
+    // })
+    // gsap.to(".svg-preload", {
+    //     yPercent: -60,
+    //     ease: "easeInOutQuart",
+    //     duration: 1.4,
+    //     delay: 0.2
+    // })
+
 }
 
 function initCustomLazyLoad() {
@@ -1513,44 +1600,119 @@ function initCustomLazyLoad() {
 
     let scope = wrappers[0];
 
-    const lazyImages = scope.querySelectorAll('[data-img="lazy"]');
 
 
-    lazyImages.forEach(img => {
+    if (scope.querySelector("[data-img='marquee']")) {
+        const marqueeImages = scope.querySelectorAll('[data-img="marquee"]');
+        let imagesToLoad = marqueeImages.length;
 
-        // Backup src/srcset
-        img.dataset.src = img.src;
-        img.dataset.srcset = img.srcset;
+        marqueeImages.forEach(img => {
+            img.dataset.src = img.src;
+            if (img.srcset) img.dataset.srcset = img.srcset;
 
-        // Replace with dummy
-        img.removeAttribute('src');
-        img.removeAttribute('srcset');
+            img.removeAttribute('src');
+            img.removeAttribute('srcset');
+            img.removeAttribute('loading');
+        });
 
-        img.removeAttribute('loading');
+        const observerOptions = {
+            root: scope,
+            rootMargin: '1000px 0px',
+            threshold: 0
+        };
+
+        const loadImage = (entry) => {
+            const img = entry.target;
+
+            if (img.dataset.src) img.src = img.dataset.src;
+            if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+
+            // Optional: listen for actual load to avoid race conditions
+            img.addEventListener('load', () => {
+                imagesToLoad--;
+                if (imagesToLoad === 0) {
+
+                    initMarquee();
+                }
+            });
+
+            observer.unobserve(img);
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    loadImage(entry);
+                }
+            });
+        }, observerOptions);
+
+        marqueeImages.forEach(img => observer.observe(img));
+
+
+        // const lazyLoadInstance = new LazyLoad({
+        //     elements_selector: '[data-img="marquee"]', // Target your specific images
+        //     container: scope,
+        //     threshold: 800,
+        //     callback_loaded: function (element) {
+        //         lazyLoadInstance.loadAll();
+
+        //     },
+        //     callback_finish: function () {
+        //         // This fires when ALL lazy elements are loaded
+        //         initMarquee();
+
+        //     },
+
+        // });
+    }
+
+    if (scope.querySelector("[data-img='lazy']")) {
+        const lazyImages = scope.querySelectorAll('[data-img="lazy"]');
+
+        lazyImages.forEach(img => {
+
+            // Backup src/srcset
+            img.dataset.src = img.src;
+            img.dataset.srcset = img.srcset;
+
+            // Replace with dummy
+            img.removeAttribute('src');
+            img.removeAttribute('srcset');
+
+            img.removeAttribute('loading');
+
+        }
+        );
+        // Now pass only safe images to LazyLoad
+        new LazyLoad({
+            container: scope,
+            elements_selector: '[data-img="lazy"]',
+            threshold: 1200,
+
+        });
 
     }
-    );
-
-
-    // Now pass only safe images to LazyLoad
-    new LazyLoad({
-        container: scope,
-        threshold: 800,
-
-    }, lazyImages);
 
     if (scope.querySelector(".lazy-video")) {
         const lazyLoadInstance = new LazyLoad({
             container: scope,
             elements_selector: ".lazy-video",
-            callback_loaded: (el) => {
-                console.log("Video lazy-loaded:", el);
-            }
+            threshold: 2000,
+            callback_loaded: function (element) {
+
+                console.log("WSHs");
+
+            },
         });
 
 
-        window.addEventListener("touchstart", () => {
+        scope.addEventListener("touchstart", () => {
+            console.log("ESHHH");
+
+            if (!scope.querySelector(".lazy-video")) return; // Exit if video is already playing
             scope.querySelector(".lazy-video").play();
+
         }, { once: true });
 
 
@@ -1573,14 +1735,294 @@ function initCustomLazyLoad() {
         });
     }
 
+}
+
+function initDynamicCustomTextCursor() {
+    let mm = gsap.matchMedia();
+
+    mm.add("(min-width: 768px)", () => {
+        let wrappers = document.querySelectorAll('.page-wrapper');
+        let scope = wrappers[0];
+        if (!scope.querySelector(".cursor")) return; // Exit if no cursor found
+        let cursorItem = scope.querySelector(".cursor");
+        let cursorParagraph = cursorItem.querySelector("p");
+        let targets = scope.querySelectorAll("[data-cursor]");
+        let xOffset = 6;
+        let yOffset = 140;
+        let cursorIsOnRight = false;
+        let currentTarget = null;
+        let lastText = '';
+
+        // Position cursor relative to actual cursor position on page load
+        gsap.set(cursorItem, { xPercent: xOffset, yPercent: yOffset });
+
+        // Use GSAP quick.to for a more performative tween on the cursor
+        let xTo = gsap.quickTo(cursorItem, "x", { ease: "power3" });
+        let yTo = gsap.quickTo(cursorItem, "y", { ease: "power3" });
+
+        // Function to get the width of the cursor element including a buffer
+        const getCursorEdgeThreshold = () => {
+            return cursorItem.offsetWidth + 16; // Cursor width + 16px margin
+        };
+
+        // On mousemove, call the quickTo functions to the actual cursor position
+        window.addEventListener("mousemove", e => {
+            let windowWidth = window.innerWidth;
+            let windowHeight = window.innerHeight;
+            let scrollY = window.scrollY;
+            let cursorX = e.clientX;
+            let cursorY = e.clientY + scrollY; // Adjust cursorY to account for scroll
+
+            // Default offsets
+            let xPercent = xOffset;
+            let yPercent = yOffset;
+
+            // Adjust X offset dynamically based on cursor width
+            let cursorEdgeThreshold = getCursorEdgeThreshold();
+            if (cursorX > windowWidth - cursorEdgeThreshold) {
+                cursorIsOnRight = true;
+                xPercent = -100;
+            } else {
+                cursorIsOnRight = false;
+            }
+
+            // Adjust Y offset if in the bottom 10% of the current viewport
+            if (cursorY > scrollY + windowHeight * 0.9) {
+                yPercent = -120;
+            }
+
+            if (currentTarget) {
+                let newText = currentTarget.getAttribute("data-cursor");
+                if (newText !== lastText) { // Only update if the text is different
+                    cursorParagraph.innerHTML = newText;
+                    lastText = newText;
+
+                    // Recalculate edge awareness whenever the text changes
+                    cursorEdgeThreshold = getCursorEdgeThreshold();
+                }
+            }
+
+            gsap.to(cursorItem, { xPercent: xPercent, yPercent: yPercent, duration: 0.9, ease: "power3" });
+            xTo(cursorX);
+            yTo(cursorY - scrollY);
+        });
+
+        // Add a mouse enter listener for each link that has a data-cursor attribute
+        targets.forEach(target => {
+            target.addEventListener("mouseenter", () => {
+                currentTarget = target; // Set the current target
+
+                let newText = target.getAttribute("data-cursor");
+
+                // Update only if the text changes
+                if (newText !== lastText) {
+                    cursorParagraph.innerHTML = newText;
+                    lastText = newText;
+
+                    // Recalculate edge awareness whenever the text changes
+                    let cursorEdgeThreshold = getCursorEdgeThreshold();
+                }
+            });
+        });
+    });
+}
+
+function initTerminVereinbarung() {
+
+
+    let wrappers = document.querySelectorAll('.page-wrapper');
+    let scope = wrappers[0];
+
+    const openButtons = scope.querySelectorAll("button[data-termin]")
+    const terminContainer = scope.querySelector(".termin-container")
+    const closeButtons = terminContainer.querySelectorAll("[data-modal-termin-close]");
+
+
+    if (openButtons.length == 0) return; // Exit if no buttons found
+    let openTl, closeTl;
+    let mm = gsap.matchMedia();
+
+    openButtons.forEach(button => {
+        button.addEventListener('click', () => {
+
+            scope.querySelector('.termin-container').setAttribute('data-open', '');
+
+
+            // closeTl?.kill(); // Kill the close timeline if it exists
+            // openTl = gsap.timeline({ defaults: { duration: 1, ease: "easeOutQuart" } });
+
+            // openTl.set(terminContainer, {
+            //     autoAlpha: 1,
+            //     pointerEvents: 'auto',
+            // });
+
+            // if (window.innerWidth >= 768) {
+            //     openTl
+            //         .set(terminContainer.querySelector(".termin-wrapper-content"), {
+            //             clipPath: "inset(0% 0% 0% 100%)",
+            //         }, 0)
+            //         .set(terminContainer.querySelector(".modal-close-btn"), {
+            //             rotate: 90,
+            //             autoAlpha: 0,
+            //             xPercent: 200,
+            //             yPercent: -50,
+            //         }, 0)
+            //         .to(terminContainer.querySelector(".modal-close-btn"), {
+            //             xPercent: 0,
+            //             rotate: 0,
+            //             autoAlpha: 1,
+            //             duration: .7
+            //         }, 0.5);
+
+            // } else {
+
+            //     openTl.set(terminContainer.querySelector(".termin-wrapper-content"), {
+            //         clipPath: "inset(100% 0 0 0)",
+
+            //     })
+
+            //         .set(terminContainer.querySelector(".modal-close-btn"), {
+            //             rotate: 90,
+            //             autoAlpha: 0,
+            //             yPercent: 200,
+            //         }, 0)
+
+            //         .to(terminContainer.querySelector(".modal-close-btn"), {
+            //             yPercent: 0,
+            //             rotate: 0,
+            //             autoAlpha: 1,
+            //             duration: .7
+            //         }, 0.5)
+            // }
+
+
+            // openTl.set(terminContainer.querySelector(".termin-backdrop"), {
+            //     autoAlpha: 0,
+            // }, 0)
+
+            //     .set(terminContainer.querySelectorAll(".list-person-item img"), {
+            //         scale: 1.1,
+            //     }, 0)
 
 
 
+            //     .to(terminContainer.querySelector(".termin-wrapper-content"), {
+            //         clipPath: "inset(0% 0% 0% 0%)",
+            //     }, 0)
+
+
+
+            //     .to(terminContainer.querySelectorAll(".list-person-item img"), {
+            //         scale: 1,
+            //     }, 0)
+
+
+
+            //     .to(terminContainer.querySelector(".termin-backdrop"), {
+            //         autoAlpha: 1,
+            //     }, 0)
+
+
+
+        });
+    }
+    );
+
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+
+            console.log("WSHH");
+
+            scope.querySelector('.termin-container').removeAttribute('data-open');
+            // openTl?.kill(); // Kill the open timeline if it exists
+            // closeTl = gsap.timeline({
+            //     defaults: {
+            //         duration: 1,
+            //         ease: "easeOutQuart",
+            //     },
+
+            // })
+            //     .set(terminContainer, {
+            //         pointerEvents: 'none',
+            //     })
+
+            // mm.add("(min-width: 768px)", () => {
+            //     closeTl.to(terminContainer.querySelector(".termin-wrapper-content"), {
+            //         clipPath: "inset(0% 0% 0% 100%)",
+            //     }, 0)
+
+
+
+            // })
+
+            // mm.add("(max-width: 767px)", () => {
+            //     closeTl.to(terminContainer.querySelector(".termin-wrapper-content"), {
+            //         clipPath: "inset(100% 0% 0% 0%)",
+            //     }, 0)
+
+
+            // })
+
+            // closeTl.to(terminContainer.querySelector(".termin-backdrop"), {
+            //     autoAlpha: 0,
+            // }, 0)
+            //     .to(terminContainer.querySelector(".modal-close-btn"), {
+            //         rotate: 0,
+            //         autoAlpha: 0,
+            //         duration: .7
+            //     }, 0)
+
+        });
+
+
+
+
+    })
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (terminContainer) {
+                const closeBtn = terminContainer.querySelector('.modal-close-btn');
+                if (closeBtn) {
+                    closeBtn.click();
+                }
+            }
+        }
+    });
+
+    scope.querySelectorAll('.termin-person-btn-wrapper').forEach(wrapper => {
+        const data = wrapper.dataset.booking;
+        if (!data) return;
+
+        const bookings = data.split(';'); // ["Bern|url", "Lausanne|url"]
+
+        const templateButton = wrapper.querySelector('a'); // Your existing button
+        if (!templateButton) return;
+
+        // Remove original template (optional)
+        templateButton.remove();
+
+        bookings.forEach(entry => {
+            const [location, url] = entry.split('|');
+            if (!location || !url) return;
+
+            // Clone the button
+            const newButton = templateButton.cloneNode(true);
+
+            // Set URL
+            newButton.href = url;
+
+            // Set location text (first .button-span)
+            const spanText = newButton.querySelector('.button-span');
+            if (spanText) spanText.textContent = location;
+
+            // Append to wrapper
+            wrapper.appendChild(newButton);
+        });
+    });
 
 
 }
-
-
 
 function initScripts(delay, hash) {
     // document.body.setAttribute('data-loaded', 'true');
@@ -1589,18 +2031,24 @@ function initScripts(delay, hash) {
         autoAlpha: 1,
     })
 
+    // gsap.config({
+    //     nullTargetWarn: false,
+    //     trialWarn: false
+    // });
+
+
     // Animate all elements with class 'animate-percentage' from 0% to 100% in 1 second using GSAP
     // Start at 0
 
-    initPreloader();
+
     initLenis();
     let mm = gsap.matchMedia();
     mm.add("(min-width: 768px)", () => {
         initDetectScrollingDirection();
     });
     initAccordionCSS();
-    initTeamImagePin();
-    initMarqueeImageLoaded();
+
+    // initMarqueeImageLoaded();
     initNavigation();
     initHeaderLogo();
     initCheckSectionThemeScroll();
@@ -1610,17 +2058,21 @@ function initScripts(delay, hash) {
     initOpenVerticalModal();
     initHorizontalModal();
 
-
+    initDynamicCustomTextCursor();
     initHomePageAnimation();
     initScrollToTop();
     initCustomLazyLoad();
-
+    initTerminVereinbarung();
     document.fonts.ready.then(() => {
         initSplitText();
-        initAppearEffects(delay);
         initHeroAnimations(delay, hash);
+        initPreloader();
+        initAppearEffects(delay);
+        initTeamImagePin();
     })
 }
+
+
 // Initialize Accordion CSS
 document.addEventListener('DOMContentLoaded', () => {
     gsap.registerPlugin(ScrollTrigger, CustomEase);
@@ -1635,17 +2087,30 @@ document.addEventListener('DOMContentLoaded', () => {
     CustomEase.create("wshanim", ".85, 0, 0.03, 1");
 
     const swup = new Swup({
-        plugins: [new SwupParallelPlugin(), new SwupPreloadPlugin(), new SwupDebugPlugin()],
+        plugins: [new SwupParallelPlugin(),
+        new SwupPreloadPlugin(
+            {
+                preloadVisibleLinks: {
+                    delay: 500,
+                    ignore: (el) => {
+                        // Check if the link is inside .header-right-wrapper .nav
+                        return el.closest('.header-right-wrapper .nav') !== null;
+                    }
+                }
+            }
+        ),
+
+        new SwupDebugPlugin()],
         animateHistoryBrowsing: true,
     });
 
 
 
-    // initScripts(2.4);
-    initScripts(0);
+    initScripts(3.25);
+    // initScripts(0);
 
     swup.hooks.on('page:view', (visit) => {
-        initScripts(.75, visit.to.hash);
+        initScripts(.8, visit.to.hash);
     });
 
     swup.hooks.on("link:self", (event) => {

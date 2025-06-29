@@ -63,12 +63,15 @@
     @media (min-width: 768px) {
         &__item-p {
             display: flex;
+            flex-direction: column;
+            padding-left: 7.9rem;
 
-            &::before {
-                content: '';
-                min-width: 7.9rem;
-                display: block;
-                opacity: 0;
+            p {
+                margin-bottom: .7rem;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
             }
         }
 
@@ -329,6 +332,10 @@ button.button-main,
 .word-mask {
     padding-block: .1em;
     margin-block: -.2em;
+
+    .line {
+        will-change: transform;
+    }
 }
 
 
@@ -380,7 +387,7 @@ button.button-main,
     .menu-button {
         color: var(--light);
         background-color: var(--dark);
-        width: 1.55rem;
+        width: 1.52rem;
 
 
 
@@ -461,7 +468,7 @@ button.button-main,
                     transition: opacity 0.3s ease;
                     font-size: 1rem;
 
-                    @media (hover: none) and (max-width: 767px) {
+                    @media (max-width: 767px) {
                         padding-top: .4em;
 
                         &:last-child {
@@ -530,13 +537,14 @@ button.button-main,
     .big-nav-wrapper-inner {
         clip-path: inset(0 0% 0 100%);
         transition: all .8s var(--ease-out-quart);
+        will-change: clip-path;
 
     }
 
     .nav-wrapper-line {
         transform: scaleX(0);
         transform-origin: right;
-        transition: all .8s var(--ease-out-quart) .2s;
+        transition: all 1.2s var(--ease-out-quart) .2s;
     }
 
     .button-wrapper-mobile {
@@ -544,7 +552,7 @@ button.button-main,
 
         &>* {
             transform: translateY(100%);
-            transition: all .6s var(--ease-out-quart);
+            transition: all .8s var(--ease-out-quart) .5s;
         }
     }
 
@@ -569,8 +577,8 @@ button.button-main,
 
             @for $i from 1 through 10 {
                 &:nth-child(#{$i})>*:first-child {
-                    transition: transform 0.8s var(--ease-out-quart) #{0.05 * $i}s,
-                    color 0.3s ease; // no delay
+                    transition: transform 0.8s var(--ease-out-quart) #{0.05 * $i + .2}s,
+                    color 0.1s ease; // no delay
                 }
             }
         }
@@ -618,10 +626,25 @@ button.button-main,
 }
 
 .rich-text-ausbildung p {
+    margin-bottom: .8rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
 
     span {
         display: block;
         margin-bottom: .2rem;
+
+        &:first-child {
+            // color: var(--dark-050);
+
+            &::before {
+                content: "-";
+                margin-right: .25em;
+                // color: var(--dark-050);
+            }
+        }
     }
 
     .edu-year {}
@@ -742,7 +765,7 @@ button.button-main,
     position: absolute;
     top: 0;
     left: 0;
-    clip-path: inset(0% 100% 0% 0%);
+    clip-path: inset(0% 99.99% 0% 0%);
 }
 
 [data-location] {
@@ -770,10 +793,16 @@ button.button-main,
     position: relative;
 }
 
+.rich-text-modal-h a {
+    text-decoration: none;
+    position: relative;
+}
+
 .underline-link::before,
 .underline-link.is--alt::before,
 .underline-link.is--alt::after,
-.accordion-css__item-p a::before {
+.accordion-css__item-p a::before,
+.rich-text-modal-h a::before {
     content: "";
     position: absolute;
     bottom: -0.125rem;
@@ -787,7 +816,8 @@ button.button-main,
 }
 
 .underline-link:hover::before,
-.accordion-css__item-p a:hover::before {
+.accordion-css__item-p a:hover::before,
+.rich-text-modal-h a:hover::before {
     transform-origin: left;
     transform: scaleX(1) rotate(0.001deg);
 }
@@ -847,7 +877,6 @@ button.button-main,
 
         .modal-close-btn-inner {
             rotate: 90deg;
-            scale: 1.1;
         }
     }
 }
@@ -861,7 +890,8 @@ button.button-main,
 .pages {
     display: grid;
     width: 100%;
-    min-height: 100dvh;
+    height: 100dvh;
+
     background-color: white;
     // overflow: hidden;
 
@@ -872,7 +902,7 @@ button.button-main,
         grid-column: 1;
         z-index: 2;
         overflow-y: auto;
-        height: 100dvh;
+        height: 100%;
         background-color: var(--light);
 
         &+.page-wrapper {
@@ -895,12 +925,12 @@ html {
 
     --wsh-anim: cubic-bezier(.75, 0, 0, .9);
     --wsh-anim2: cubic-bezier(.85, 0.1, 0.15, 1);
-    --custom-easing: linear(0, 0.0008 4.07%, 0.0053 9.73%, 0.0125 14.27%, 0.0227 18.33%, 0.0358 21.93%,
-            0.0507 24.93%, 0.0724 28.12%, 0.0974 30.81%, 0.1235 32.77%, 0.1471 34.19%,
-            0.1748 35.49%, 0.2059 36.6%, 0.2686 38.13%, 0.4341 41.05%, 0.4795 42.32%,
-            0.5183 43.88%, 0.5464 45.41%, 0.5704 47.13%, 0.6322 53.28%, 0.6783 56.85%,
-            0.7276 59.77%, 0.8377 65.33%, 0.8848 68.38%, 0.9133 70.88%, 0.9369 73.68%,
-            0.9565 76.86%, 0.9722 80.45%, 0.9844 84.55%, 0.9931 89.15%, 0.9983 94.29%, 1);
+    // --custom-easing: linear(0, 0.0008 4.07%, 0.0053 9.73%, 0.0125 14.27%, 0.0227 18.33%, 0.0358 21.93%,
+    //         0.0507 24.93%, 0.0724 28.12%, 0.0974 30.81%, 0.1235 32.77%, 0.1471 34.19%,
+    //         0.1748 35.49%, 0.2059 36.6%, 0.2686 38.13%, 0.4341 41.05%, 0.4795 42.32%,
+    //         0.5183 43.88%, 0.5464 45.41%, 0.5704 47.13%, 0.6322 53.28%, 0.6783 56.85%,
+    //         0.7276 59.77%, 0.8377 65.33%, 0.8848 68.38%, 0.9133 70.88%, 0.9369 73.68%,
+    //         0.9565 76.86%, 0.9722 80.45%, 0.9844 84.55%, 0.9931 89.15%, 0.9983 94.29%, 1);
 
     --custom-easing2: linear(0, 0.0014 5.33%, 0.0066 10.87%, 0.0158 16.09%, 0.026 19.87%, 0.044 24.51%,
             0.0649 28.33%, 0.0823 30.77%, 0.1106 33.92%, 0.1624 37.82%, 0.2221 40.9%,
@@ -927,6 +957,7 @@ html {
 #swup {
     transition: clip-path 2s var(--custom-easing3FINAL);
     clip-path: inset(0%);
+    will-change: clip-path;
 }
 
 html.is-changing .transition-fade {
@@ -983,6 +1014,7 @@ html.is-changing .transition-fade {
     position: fixed;
     z-index: 30;
     transition: transform 1.8s var(--wsh-anim2) .5s;
+    will-change: transform;
 }
 
 /* Define the styles for the unloaded pages */
@@ -991,3 +1023,106 @@ html.is-animating .transition-fade {}
 
 
 // SWUP TRANSITION END
+
+@media (max-width: 767px) {
+    .cursor {
+        display: none;
+    }
+
+}
+
+body:has([data-cursor]:hover) .cursor {
+    opacity: 1;
+}
+
+.button:hover .button-bg {
+    transform: scale(0.95);
+}
+
+.big-nav-wrapper-bg {
+    will-change: opacity;
+}
+
+.button-span-wrapper.is--schwer {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    span {
+        text-wrap: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* 2 lines */
+}
+
+
+.termin-container {
+    transition: all .9s var(--ease-out-quart) .4s;
+
+    // INSERT_YOUR_CODE
+    .termin-person {
+        opacity: 0;
+        transform: translateY(20%);
+        transition:
+            opacity 0.7s var(--ease-out-quart),
+            transform 0.7s var(--ease-out-quart);
+        transition-delay: 0s;
+    }
+
+    &[data-open] {
+        .termin-person {
+            opacity: 1;
+            transform: translateY(0%);
+        }
+
+        @for $i from 1 through 8 {
+            .list-person-item:nth-child(#{$i}) .termin-person {
+                transition-delay: .1s * $i;
+            }
+        }
+    }
+
+    .termin-wrapper-content {
+
+        clip-path: inset(0 0% 0 99.99%);
+        transition: all .9s var(--ease-out-quart);
+        will-change: clip-path;
+    }
+
+    .termin-backdrop {
+        opacity: 0;
+        transition: opacity .7s ease;
+    }
+
+    .modal-close-btn {
+        opacity: 0;
+        transform: translate(200%, -50%);
+        transition: all .3s var(--ease-out-quart);
+    }
+
+
+    &[data-open] {
+        pointer-events: all;
+        opacity: 1;
+
+        transition: all 0s var(--ease-out-quart);
+
+        .termin-backdrop {
+            opacity: 1;
+        }
+
+        .termin-wrapper-content {
+            clip-path: inset(0 0 0 0);
+        }
+
+        .modal-close-btn {
+            opacity: 1;
+            transform: translate(0%, -50%);
+            transition: all .9s var(--ease-out-quart) .5s;
+        }
+
+    }
+}
