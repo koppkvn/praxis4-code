@@ -292,6 +292,7 @@ function initNavigation() {
         const targetUrl = new URL(href, window.location.origin).pathname;
 
         console.log(currentUrl, targetUrl);
+        console.log("WSG");
 
         if (targetUrl === currentUrl) {
             link.setAttribute("data-no-swup", "");
