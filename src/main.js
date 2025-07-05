@@ -11,9 +11,14 @@ function initAccordionCSS() {
     let scope = wrappers[0];
     if (!scope.querySelector('[data-accordion-css-init]')) return; // Exit if no accordion elements found
 
+
+
     scope.querySelectorAll('[data-accordion-css-init]').forEach((accordion) => {
         const closeSiblings = accordion.getAttribute('data-accordion-close-siblings') === 'true';
-
+        // const firstAccordionItem = accordion.querySelector('[data-accordion-status]');
+        // if (firstAccordionItem) {
+        //     firstAccordionItem.setAttribute('data-accordion-status', 'active');
+        // }
         accordion.addEventListener('click', (event) => {
             const toggle = event.target.closest('[data-accordion-toggle]');
             if (!toggle) return; // Exit if the clicked element is not a toggle
@@ -179,7 +184,6 @@ function initMarqueeImageLoaded() {
 
         Promise.all(imagePromises).then(() => {
 
-            console.log("CEST PARTI");
 
             initMarquee();
         });
@@ -194,7 +198,6 @@ function initMarquee() {
     const marquee = scope.querySelector('[data-marquee-scroll-direction-target]');
     const marqueeContent = marquee.querySelector('[data-marquee-collection-target]');
     const marqueeScroll = marquee.querySelector('[data-marquee-scroll-target]');
-    console.log("INITING MARQUEE");
 
     // Get data attributes
     const { marqueeSpeed: speed, marqueeDirection: direction, marqueeDuplicate: duplicate, marqueeScrollSpeed: scrollSpeed } = marquee.dataset;
@@ -208,7 +211,6 @@ function initMarquee() {
     const speedMultiplier = window.innerWidth < 479 ? 0.25 : window.innerWidth < 991 ? 0.5 : 1;
 
     let marqueeSpeed = marqueeSpeedAttr * (marqueeContent.offsetWidth / window.innerWidth) * speedMultiplier;
-    console.log(marqueeSpeed);
 
     // Precompute styles for the scroll container
     marqueeScroll.style.marginLeft = `${scrollSpeedAttr * -1}%`;
@@ -256,7 +258,6 @@ function initMarquee() {
         onUpdate: (self) => {
             const isInverted = self.direction === 1; // Scrolling down
             const currentDirection = isInverted ? -marqueeDirectionAttr : marqueeDirectionAttr;
-            console.log(isInverted);
 
             // Update animation direction and marquee status
             animation.timeScale(currentDirection);
@@ -291,8 +292,6 @@ function initNavigation() {
         const currentUrl = window.location.pathname;
         const targetUrl = new URL(href, window.location.origin).pathname;
 
-        console.log(currentUrl, targetUrl);
-        console.log("WSG");
 
         if (targetUrl === currentUrl) {
             link.setAttribute("data-no-swup", "");
@@ -301,7 +300,6 @@ function initNavigation() {
 
 
                 const targetId = href.split('#')[1]; // Get the target ID from the href
-                console.log(targetId);
 
                 if (targetId) {
                     setTimeout(() => {
@@ -567,7 +565,6 @@ function initOpenVerticalModal() {
             if (!dynItem) return;
             const attr = button.getAttribute("data-modal-vertical-open")
             let modal;
-            console.log(attr);
             if (attr == "news") {
                 modal = scope.querySelector('.modal-vertical-container[data-type="news"]');
             } else {
@@ -602,7 +599,10 @@ function initOpenVerticalModal() {
                     autoAlpha: 0,
 
                 }, 0)
-
+                .set(modal.querySelector(".termin-person-btn-wrapper.is--profil"), {
+                    clipPath: "inset(100% 0% 0% 0%)",
+                    // y: 20
+                }, 0)
 
                 // .set(".modal-vertical-content-bg", {
                 //     yPercent: 100,
@@ -636,6 +636,10 @@ function initOpenVerticalModal() {
                     duration: duration + .2,
                     stagger: 0.05,
                 }, 0.4)
+                .to(modal.querySelector(".termin-person-btn-wrapper.is--profil"), {
+                    clipPath: "inset(0% 0% 0% 0%)",
+                    // y: 0,
+                }, 0.6)
 
                 .to(modal.querySelector(".modal-backdrop"), {
                     autoAlpha: 1,
@@ -749,17 +753,35 @@ function initHorizontalModal() {
     const titles = scope.querySelectorAll('.modal-h-big-title');
     titles.forEach(title => {
         if (title) {
-            const text = title.textContent.trim();
+            let text = title.textContent.trim();
+            const replacements = {
+                'Dr.': 'Dr§',
+                'z.B.': 'z§B§',
+                'd.h.': 'd§h§',
+                'bzw.': 'b§z§w§',
+                'u.a.': 'u§a§',
+                'etc.': 'etc§'
+            };
 
-            // Match the first sentence (up to first period, exclamation mark or question mark)
-            const firstSentence = text.match(/.*?[.!?](\s|$)/);
+            for (const [abbr, placeholder] of Object.entries(replacements)) {
+                text = text.replace(new RegExp(abbr, 'gi'), placeholder);
+            }
 
-            if (firstSentence) {
-                title.textContent = firstSentence[0].trim();
+            // Now extract first sentence
+            const match = text.match(/.*?[.!?](\s|$)/);
 
+            if (match) {
+                let result = match[0].trim();
+
+                // Revert placeholders back to abbreviations
+                for (const [abbr, placeholder] of Object.entries(replacements)) {
+                    result = result.replace(new RegExp(placeholder, 'gi'), abbr);
+                }
+
+                title.textContent = result;
             }
         }
-    })
+    });
     const modals = scope.querySelectorAll('.modal-horizontal-container');
 
     modals.forEach((el, i) => {
@@ -1044,6 +1066,31 @@ function initStandorteKontakt() {
         navProgress.appendChild(indicator);
     }
 
+    //fasf asfa sf
+
+    scope.querySelectorAll('a.kontakt-phone').forEach(link => {
+        const match = link.textContent.match(/^(.+?)\s*\((.*?)\)\s*$/);
+
+        if (match) {
+            const numberText = match[1].trim();
+            const locationText = match[2].trim();
+
+            // Update href (remove everything in parentheses)
+            link.href = link.href.replace(/\s*\(.*?\)\s*/g, '');
+
+            // Create a span for the location, outside the link
+            const locationSpan = document.createElement('span');
+            locationSpan.className = 'phone-location';
+            locationSpan.textContent = ` (${locationText})`;
+
+            // Replace link text with only number
+            link.textContent = numberText;
+
+            // Insert the location span after the link
+            link.insertAdjacentElement('afterend', locationSpan);
+        }
+    });
+
     updateIndicator(firstBtn); // Initialize indicator position
 
     // Function to update the indicator based on the active nav link
@@ -1240,23 +1287,37 @@ function initHeroAnimations(delay, hash) {
             delay: delay - .3,
             duration: 2,
         }, 0)
+        .from(scope.querySelector(".container.is--arrowdown .arrow-down"), {
+            opacity: 0,
+            // y: 50,
+            ease: "easeInOutQuart",
+            delay: delay + 2,
+            duration: .6,
+        }, 0)
         .from(scope.querySelector(".section.hero-section .news-block"), {
             opacity: 0,
             y: 50,
             delay: delay,
         }, 0.7)
-    if (hash) {
+    if (hash?.includes("pricing")) {
+
         tl.from(scope.querySelectorAll(".section.is--pricing .big-title-style .line"), {
             yPercent: 100,
             delay: delay,
             stagger: 0.15,
-            onStart: () => {
 
-
-                scope.querySelector(".pricing-img-wrapper video")?.play();
-            }
         }, 0.5)
+
+    } else if (hash?.includes("dienstleistungen")) {
+        tl.from(scope.querySelectorAll(".section.is--dienstleistung .medium-title-style .line"), {
+            yPercent: 100,
+            delay: delay + .25,
+            stagger: 0.15,
+
+        }, 0.5)
+
     }
+
     tl.from(scope.querySelectorAll(".section.is--pricing .pricing-right-wrapper > *"), {
         opacity: 0,
         y: 50,
@@ -1331,7 +1392,7 @@ function initAppearEffects(delay = 0) {
     // STEP 2: Animate inside lines
     document.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
         gsap.from(el, {
-            yPercent: 100,
+            yPercent: 101,
             duration: .8,
             ease: "easeOutQuart",
 
@@ -1344,25 +1405,41 @@ function initAppearEffects(delay = 0) {
     });
 
 
+
+
+    let mm = gsap.matchMedia();
+
+    // const items = scope.querySelectorAll(".accordion-css__item-h3.is--number");
+
+    // items.forEach((item, index) => {
+    //     const number = String(index + 1).padStart(2, '0'); // leading zero
+    //     const numberSpan = document.createElement("span");
+    //     numberSpan.classList.add("title-number");
+    //     numberSpan.setAttribute('data-anim', 'lines-up');
+    //     numberSpan.textContent = `(${number})`;
+
+    //     // Prepend the number
+    //     item.prepend(numberSpan);
+
+
+
+    //     let splitInstance = new SplitText(numberSpan, {
+    //         type: "lines",
+    //         mask: "lines",
+    //         linesClass: "line",
+    //     });
+
+    // });
+
     let upAnimations = scope.querySelectorAll('[data-anim="lines-up"]');
 
 
-    // let opacityAnimations = document.querySelectorAll('[data-anim="opacity"]');
-    // opacityAnimations.forEach((el) => {
-    //     gsap.from(el, {
-    //         opacity: 0,
-    //         yPercent: 10,
-    //         duration: 1.5,
-    //         ease: "easeOutQuart",
-    //         scrollTrigger: {
-    //             trigger: el,
-    //             start: "top 85%",
-    //         }
-    //     })
-    // })
-    // console.log(upAnimations);
+
 
     upAnimations.forEach((el) => {
+
+        console.log(el);
+
         gsap.from(el.querySelectorAll(".line"), {
             y: "100%",
             stagger: 0.05,
@@ -1376,10 +1453,55 @@ function initAppearEffects(delay = 0) {
         })
 
     })
+
+
+    let lineAnimations = scope.querySelectorAll('.line-anim');
+
+
+    lineAnimations.forEach((el) => {
+        gsap.to(el, {
+            xPercent: 100,
+            duration: 1.2,
+            ease: "easeOutQuart",
+
+            scrollTrigger: {
+                trigger: el,
+                start: "top 85%",
+            }
+        })
+
+    })
+
+
+
+
+    mm.add("(min-width: 992px)", () => {
+
+
+
+        let slowDownAnimation = scope.querySelectorAll('[data-anim="slow-down"]');
+        let offset = scope.querySelector('.painpoints-left-wrapper').offsetHeight - scope.querySelector('.left-wrapper-pain').offsetHeight - 45;
+        slowDownAnimation.forEach(el => {
+            console.log(offset);
+
+            gsap.to(el, {
+                // y: offset,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: el,
+                    start: "top 85%", // when the top of container hits bottom of viewport
+                    end: `+=${offset}`,   // when bottom of container hits top of viewport
+                    pin: true,
+                }
+            })
+
+        })
+
+    })
 }
+
 function initPreloader() {
     let wordsElement = document.querySelectorAll('.preload-wrapper [data-split="words"]');
-    console.log(wordsElement);
 
     wordsElement.forEach(target => {
         let splitInstance = new SplitText(target, {
@@ -1702,14 +1824,12 @@ function initCustomLazyLoad() {
             threshold: 2000,
             callback_loaded: function (element) {
 
-                console.log("WSHs");
 
             },
         });
 
 
         scope.addEventListener("touchstart", () => {
-            console.log("ESHHH");
 
             if (!scope.querySelector(".lazy-video")) return; // Exit if video is already playing
             scope.querySelector(".lazy-video").play();
@@ -1932,7 +2052,6 @@ function initTerminVereinbarung() {
     closeButtons.forEach(button => {
         button.addEventListener('click', () => {
 
-            console.log("WSHH");
 
             scope.querySelector('.termin-container').removeAttribute('data-open');
             // openTl?.kill(); // Kill the open timeline if it exists
@@ -2015,7 +2134,9 @@ function initTerminVereinbarung() {
 
             // Set location text (first .button-span)
             const spanText = newButton.querySelector('.button-span');
-            if (spanText) spanText.textContent = location;
+
+
+            if (spanText) spanText.textContent = wrapper.dataset.profil ? `Termin in ${location}` : location;
 
             // Append to wrapper
             wrapper.appendChild(newButton);
@@ -2092,7 +2213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new SwupPreloadPlugin(
             {
                 preloadVisibleLinks: {
-                    delay: 500,
+                    delay: 200,
                     ignore: (el) => {
                         // Check if the link is inside .header-right-wrapper .nav
                         return el.closest('.header-right-wrapper .nav') !== null;
@@ -2101,7 +2222,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         ),
 
-        new SwupDebugPlugin()],
+            // new SwupDebugPlugin()
+        ],
         animateHistoryBrowsing: true,
     });
 
@@ -2113,6 +2235,33 @@ document.addEventListener('DOMContentLoaded', () => {
     swup.hooks.on('page:view', (visit) => {
         initScripts(.8, visit.to.hash);
     });
+
+    swup.hooks.on('scroll:anchor', (visit) => {
+        const wrapper = document.querySelector('.page-wrapper');
+
+        const currentScrollTop = wrapper.scrollTop;
+
+
+        if (visit.to.hash.includes("team")) {
+
+
+
+            wrapper.scrollTo({
+                top: currentScrollTop + 100
+            })
+
+        } else {
+
+            wrapper.scrollTo({
+                top: currentScrollTop - 100
+            })
+        }
+
+
+
+
+    });
+
 
     swup.hooks.on("link:self", (event) => {
         window.lenis.scrollTo(0, {
