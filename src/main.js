@@ -15,10 +15,21 @@ function initAccordionCSS() {
 
     scope.querySelectorAll('[data-accordion-css-init]').forEach((accordion) => {
         const closeSiblings = accordion.getAttribute('data-accordion-close-siblings') === 'true';
-        // const firstAccordionItem = accordion.querySelector('[data-accordion-status]');
-        // if (firstAccordionItem) {
-        //     firstAccordionItem.setAttribute('data-accordion-status', 'active');
-        // }
+        const firstAccordionItem = accordion.querySelector('[data-accordion-status]');
+        if (firstAccordionItem) {
+
+            firstAccordionItem.setAttribute('data-accordion-status', 'active');
+
+            firstAccordionItem.querySelector(".accordion-css__item-p")?.setAttribute('data-split', 'rich');
+            firstAccordionItem.querySelectorAll(".accordion-css__item-p p")?.forEach(p => p.setAttribute('data-anim', 'lines-up'));
+
+
+            firstAccordionItem.querySelector(".accordion-left-img")?.setAttribute('data-anim', 'img');
+
+            firstAccordionItem.querySelector(".button-main")?.setAttribute('data-anim', 'mask-up');
+
+
+        }
         accordion.addEventListener('click', (event) => {
             const toggle = event.target.closest('[data-accordion-toggle]');
             if (!toggle) return; // Exit if the clicked element is not a toggle
@@ -41,6 +52,8 @@ function initAccordionCSS() {
         });
     });
 }
+
+
 function initLenis() {
     // if (window.lenis) {
     //     window.lenis.destroy();
@@ -191,7 +204,7 @@ function initMarqueeImageLoaded() {
 }
 
 function initMarquee() {
-
+    console.log('initMarquee');
     const wrappers = document.querySelectorAll('.page-wrapper');
     let scope = wrappers[0];
     if (!scope.querySelector('[data-marquee-scroll-direction-target]')) return; // Exit if no marquee elements found
@@ -303,9 +316,11 @@ function initNavigation() {
 
                 if (targetId) {
                     setTimeout(() => {
+                        const offset = targetId === "team" && window.innerWidth >= 768 ? 120 : 0;
                         window.lenis.scrollTo(`#${targetId}`, {
                             duration: 3,
                             ease: "easeOutQuad",
+                            offset: offset
                         });
                     }, 0);
 
@@ -467,6 +482,14 @@ function initSplitText() {
     });
 
 
+    scope.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
+        const wrapper = document.createElement("div");
+        wrapper.style.overflow = "hidden";
+        wrapper.classList.add("mask-up-wrapper");
+
+        el.parentNode.insertBefore(wrapper, el);
+        wrapper.appendChild(el);
+    });
 
 
 
@@ -518,6 +541,8 @@ function initOpenVerticalModal() {
     const modal = scope.querySelector('.modal-vertical-container');
     const closeButtons = scope.querySelectorAll('[data-modal-vertical-close]');
 
+
+
     const dateElements = scope.querySelectorAll('.date');
 
     dateElements.forEach(element => {
@@ -556,7 +581,7 @@ function initOpenVerticalModal() {
         // rotate: 180,
     })
 
-    const duration = .7;
+    const duration = .8;
     const ease = "easeOutQuart";
     let openTl, closeTl;
     openButtons.forEach(button => {
@@ -574,7 +599,7 @@ function initOpenVerticalModal() {
 
             if (!modal) return;
             modal.querySelector('.modal-v-right-wrapper').scrollTop = 0;
-
+            modal.querySelector('.modal-vertical-content-inner').scrollTop = 0;
             window.lenis.destroy();
             closeTl?.kill(); // Kill the close timeline if it exists
             openTl = gsap.timeline({
@@ -599,16 +624,20 @@ function initOpenVerticalModal() {
                     autoAlpha: 0,
 
                 }, 0)
-                .set(modal.querySelector(".termin-person-btn-wrapper.is--profil"), {
-                    clipPath: "inset(100% 0% 0% 0%)",
-                    // y: 20
-                }, 0)
+                // .set(modal.querySelector(".termin-person-btn-wrapper.is--profil"), {
+                //     clipPath: "inset(100% 0% 0% 0%)",
+                //     // y: 20
+                // }, 0)
 
                 // .set(".modal-vertical-content-bg", {
                 //     yPercent: 100,
                 // })
                 .set(modal.querySelector(".modal-vertical-content-inner"), {
                     clipPath: "inset(100% 0 0 0)",
+                })
+
+                .set(modal.querySelector(".mask-up-wrapper > *"), {
+                    yPercent: 112,
                 })
 
                 .set(modal.querySelector(".modal-close-btn"), {
@@ -630,16 +659,31 @@ function initOpenVerticalModal() {
                     duration: duration,
                 }, window.innerWidth < 768 ? 0.2 : 0)
 
-                .to(modal.querySelectorAll(".modal-vertical-content-inner .line"), {
+                .to(modal.querySelectorAll(".modal-v-right-header-wrapper .line"), {
                     yPercent: 0,
                     ease: ease,
-                    duration: duration + .2,
+                    duration: duration,
                     stagger: 0.05,
                 }, 0.4)
-                .to(modal.querySelector(".termin-person-btn-wrapper.is--profil"), {
-                    clipPath: "inset(0% 0% 0% 0%)",
-                    // y: 0,
+
+                .to(modal.querySelectorAll(".modal-v-text-wrapper .line"), {
+                    yPercent: 0,
+                    ease: ease,
+                    duration: duration,
+                    stagger: 0.05,
                 }, 0.6)
+                // .to(modal.querySelector(".termin-person-btn-wrapper.is--profil"), {
+                //     clipPath: "inset(0% 0% 0% 0%)",
+                //     duration: duration,
+                //     ease: ease,
+                //     // y: 0,
+                // }, 0.5)
+
+                .to(modal.querySelector(".mask-up-wrapper > *"), {
+                    yPercent: 0,
+                    ease: ease,
+                    duration: duration,
+                }, 0.5)
 
                 .to(modal.querySelector(".modal-backdrop"), {
                     autoAlpha: 1,
@@ -1262,27 +1306,52 @@ function initHeroAnimations(delay, hash) {
         },
     });
     tl
-        .from(scope.querySelectorAll(".section.hero-section h1 .line, .section.hero-section .hero-lower-wrapper-inner .line, .container.is--kontakt .line, .container.is--natur .header-container-natur .line, .section.is--legal .line"), {
+        .from(scope.querySelectorAll(".section.hero-section h1 .line, .section.hero-section .hero-lower-wrapper-inner .line, .container.is--kontakt .header-container-natur .line, .container.is--natur .header-container-natur .line, .section.is--legal .line"), {
             yPercent: 100,
             delay: delay,
             stagger: 0.05,
         }, .6)
         .from(scope.querySelectorAll(".section.hero-section .hero-section-img"), {
-            scale: 1.1,
+            scale: 1.2,
             duration: 2.5,
             ease: "easeInOutQuart",
             delay: delay - 0.5
         }, 0)
-        .from(scope.querySelectorAll(".section.hero-section .kontakt-row"), {
+        .from(scope.querySelectorAll(".section.hero-section .kontakt-item:first-child"), {
             opacity: 0,
-            y: 50,
+            // y: 50,
             delay: delay,
             stagger: 0.15,
         }, 0.5)
+
+        // .from(scope.querySelectorAll(".section.hero-section .kontakt-item:first-child img"), {
+        //     scale: 1.2,
+        //     ease: "easeInOutQuart",
+        //     duration: 2,
+        //     // y: 50,
+        //     overwrite: "auto",
+        //     delay: delay - .2,
+        // }, 0)
+        // .from(scope.querySelectorAll(".section.hero-section .kontakt-item:first-child .line"), {
+
+        //     yPercent: 100,
+
+        //     overwrite: "auto",
+        //     // y: 50,
+        //     delay: delay,
+        // }, 0.5)
+
+        // .from(scope.querySelectorAll(".section.hero-section .kontakt-item:first-child .mask-up-wrapper > *"), {
+
+        //     yPercent: 111,
+        //     // y: 50,
+        //     delay: delay,
+        //     overwrite: "auto",
+        // }, 0.5)
         .from(scope.querySelector(".section.hero-section .hero-section-small-img"), {
             // opacity: 0,
             // y: 50,
-            scale: 1.1,
+            scale: 1.2,
             ease: "easeInOutQuart",
             delay: delay - .3,
             duration: 2,
@@ -1291,7 +1360,7 @@ function initHeroAnimations(delay, hash) {
             opacity: 0,
             // y: 50,
             ease: "easeInOutQuart",
-            delay: delay + 2,
+            delay: delay + 1,
             duration: .6,
         }, 0)
         .from(scope.querySelector(".section.hero-section .news-block"), {
@@ -1299,7 +1368,10 @@ function initHeroAnimations(delay, hash) {
             y: 50,
             delay: delay,
         }, 0.7)
-    if (hash?.includes("pricing")) {
+    if (hash?.includes("preise")) {
+
+
+
 
         tl.from(scope.querySelectorAll(".section.is--pricing .big-title-style .line"), {
             yPercent: 100,
@@ -1307,6 +1379,14 @@ function initHeroAnimations(delay, hash) {
             stagger: 0.15,
 
         }, 0.5)
+
+        tl.from(scope.querySelectorAll(".section.is--pricing .pricing-container img"), {
+            scale: 1.2,
+            ease: "easeInOutQuart",
+            duration: 2,
+            delay: delay - .2,
+            overwrite: "auto",
+        }, 0)
 
     } else if (hash?.includes("dienstleistungen")) {
         tl.from(scope.querySelectorAll(".section.is--dienstleistung .medium-title-style .line"), {
@@ -1316,21 +1396,39 @@ function initHeroAnimations(delay, hash) {
 
         }, 0.5)
 
+    } else if (hash?.includes("team")) {
+        tl.from(scope.querySelectorAll(".container.is--team .collection-item:first-child .line"), {
+            yPercent: 100,
+            delay: delay + .25,
+            stagger: 0.05,
+
+        }, 0.5)
+
+        tl.from(scope.querySelector(".container.is--team .collection-item:first-child .mask-up-wrapper .button-main"), {
+            yPercent: 111,
+            delay: delay + .25,
+            overwrite: "auto"
+        }, 0.5)
+
     }
 
-    tl.from(scope.querySelectorAll(".section.is--pricing .pricing-right-wrapper > *"), {
-        opacity: 0,
-        y: 50,
-        delay: delay,
-        stagger: 0.15,
-    }, 0.6)
+    // tl.from(scope.querySelectorAll(".section.is--pricing .pricing-right-wrapper > *"), {
+    //     opacity: 0,
+    //     y: 50,
+    //     delay: delay,
+    //     stagger: 0.15,
+    // }, 0.6)
 
-    tl.from(scope.querySelectorAll(".section.is--pricing .pricing-container img"), {
-        scale: 1.1,
-        ease: "easeInOutQuart",
-        duration: 2,
-        delay: delay - 0.5,
-    }, 0.2)
+
+
+    tl.to({},
+        {
+            onComplete: () => {
+                document.body.style.cursor = "";
+            }
+        }, 3
+
+    )
 
     // gsap.from(scope.querySelectorAll('.hero-title'), {
     // }
@@ -1380,31 +1478,30 @@ function initAppearEffects(delay = 0) {
 
     let scope = wrappers[0];
 
-    document.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
-        const wrapper = document.createElement("div");
-        wrapper.style.overflow = "hidden";
-        wrapper.classList.add("mask-up-wrapper");
-
-        el.parentNode.insertBefore(wrapper, el);
-        wrapper.appendChild(el);
-    });
 
     // STEP 2: Animate inside lines
-    document.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
+    scope.querySelectorAll('[data-anim="mask-up"]').forEach((el) => {
         gsap.from(el, {
-            yPercent: 101,
+            yPercent: 111,
             duration: .8,
             ease: "easeOutQuart",
-
             scrollTrigger: {
                 trigger: el,
-                start: "top 85%",
+                start: "top 90%",
             }
 
         });
     });
 
 
+
+    scope.querySelectorAll('[data-anim="rich"]').forEach((el) => {
+
+        el.querySelectorAll("p").forEach(p => {
+            p.setAttribute('data-anim', 'lines-up');
+        })
+
+    })
 
 
     let mm = gsap.matchMedia();
@@ -1431,72 +1528,104 @@ function initAppearEffects(delay = 0) {
 
     // });
 
-    let upAnimations = scope.querySelectorAll('[data-anim="lines-up"]');
 
 
 
 
-    upAnimations.forEach((el) => {
+    setTimeout(() => {
+        let upAnimations = scope.querySelectorAll('[data-anim="lines-up"]');
+        upAnimations.forEach((el) => {
 
-        console.log(el);
 
-        gsap.from(el.querySelectorAll(".line"), {
-            y: "100%",
-            stagger: 0.05,
-            duration: 1.2,
-            ease: "easeOutQuart",
+            gsap.from(el.querySelectorAll(".line"), {
+                y: "100%",
+                stagger: 0.1,
+                duration: 1.2,
+                ease: "easeOutQuart",
 
-            scrollTrigger: {
-                trigger: el,
-                start: "top 85%",
-            }
+                scrollTrigger: {
+                    trigger: el,
+                    start: "center 90%",
+                }
+            })
+
         })
 
-    })
+    }, 650);
 
 
     let lineAnimations = scope.querySelectorAll('.line-anim');
 
+    setTimeout(() => {
+        lineAnimations.forEach((el) => {
+            gsap.to(el, {
+                xPercent: 100,
+                duration: 1.2,
+                ease: "easeOutQuart",
 
-    lineAnimations.forEach((el) => {
-        gsap.to(el, {
-            xPercent: 100,
-            duration: 1.2,
-            ease: "easeOutQuart",
+                scrollTrigger: {
+                    trigger: el,
+                    start: "center 90%",
+                    // markers: true,
+                }
+            })
 
+        })
+    }, 650);
+
+
+
+    let imgAnimations = scope.querySelectorAll('[data-anim="img"]');
+
+    imgAnimations.forEach(el => {
+        let tl = gsap.timeline({
+            defaults: {
+                duration: 2,
+                ease: "easeOutQuart",
+            },
             scrollTrigger: {
                 trigger: el,
-                start: "top 85%",
+                start: "top bottom",
             }
         })
 
-    })
+        tl.from(el, {
+            clipPath: "inset(50% 0% 0% 0%)",
+        })
 
+        tl.from(el.querySelector('img'), {
+            scale: 1.4,
+            overwrite: "auto",
+
+        }, 0)
+
+
+    })
 
 
 
     mm.add("(min-width: 992px)", () => {
 
 
+        if (scope.querySelector("[data-anim='slow-down']")) {
+            let slowDownAnimation = scope.querySelectorAll('[data-anim="slow-down"]');
+            let offset = scope.querySelector('.painpoints-left-wrapper').offsetHeight - scope.querySelector('.left-wrapper-pain').offsetHeight - 45;
+            slowDownAnimation.forEach(el => {
+                console.log(offset);
 
-        let slowDownAnimation = scope.querySelectorAll('[data-anim="slow-down"]');
-        let offset = scope.querySelector('.painpoints-left-wrapper').offsetHeight - scope.querySelector('.left-wrapper-pain').offsetHeight - 45;
-        slowDownAnimation.forEach(el => {
-            console.log(offset);
+                gsap.to(el, {
+                    y: 500,
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: el,
+                        start: "top 85%", // when the top of container hits bottom of viewport
+                        end: `+=${offset * 2}`,   // when bottom of container hits top of viewport
+                        scrub: true
+                    }
+                })
 
-            gsap.to(el, {
-                // y: offset,
-                ease: "none",
-                scrollTrigger: {
-                    trigger: el,
-                    start: "top 85%", // when the top of container hits bottom of viewport
-                    end: `+=${offset}`,   // when bottom of container hits top of viewport
-                    pin: true,
-                }
             })
-
-        })
-
+        }
     })
 }
 
@@ -1716,6 +1845,22 @@ function initPreloader() {
     // })
 
 }
+// Helper function to wait until all images are loaded
+function waitForAllImages(images) {
+    return Promise.all(
+        Array.from(images).map(img => {
+            return new Promise(resolve => {
+                if (img.naturalWidth !== 0) {
+                    // Already loaded
+                    resolve();
+                } else {
+                    img.addEventListener('load', resolve, { once: true });
+                    img.addEventListener('error', resolve, { once: true }); // optional: resolve on error too
+                }
+            });
+        })
+    );
+}
 
 function initCustomLazyLoad() {
 
@@ -1738,56 +1883,40 @@ function initCustomLazyLoad() {
             img.removeAttribute('loading');
         });
 
-        const observerOptions = {
-            root: scope,
-            rootMargin: '1000px 0px',
-            threshold: 0
-        };
-
-        const loadImage = (entry) => {
-            const img = entry.target;
-
-            if (img.dataset.src) img.src = img.dataset.src;
-            if (img.dataset.srcset) img.srcset = img.dataset.srcset;
-
-            // Optional: listen for actual load to avoid race conditions
-            img.addEventListener('load', () => {
-                imagesToLoad--;
-                if (imagesToLoad === 0) {
-
-                    initMarquee();
-                }
-            });
-
-            observer.unobserve(img);
-        };
-
+        const marqueeContainer = scope.querySelector('[data-marquee-scroll-target]');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    loadImage(entry);
+
+
+                    // Load all images at once
+                    marqueeImages.forEach(img => {
+                        if (img.dataset.src) img.src = img.dataset.src;
+                        if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+                        img.loading = 'eager';
+                    });
+
+                    // Initialize marquee after a small delay to ensure images are loaded
+                    // Wait for all images to load, then initialize marquee
+                    waitForAllImages(marqueeImages).then(() => {
+                        initMarquee();
+                    });
+
+                    // Stop observing
+                    observer.disconnect();
                 }
             });
-        }, observerOptions);
+        }, {
+            root: scope,
+            rootMargin: '1000px 0px',
+            threshold: 0
+        });
 
-        marqueeImages.forEach(img => observer.observe(img));
+        // Observe the marquee container
+        if (marqueeContainer) {
+            observer.observe(marqueeContainer);
+        }
 
-
-        // const lazyLoadInstance = new LazyLoad({
-        //     elements_selector: '[data-img="marquee"]', // Target your specific images
-        //     container: scope,
-        //     threshold: 800,
-        //     callback_loaded: function (element) {
-        //         lazyLoadInstance.loadAll();
-
-        //     },
-        //     callback_finish: function () {
-        //         // This fires when ALL lazy elements are loaded
-        //         initMarquee();
-
-        //     },
-
-        // });
     }
 
     if (scope.querySelector("[data-img='lazy']")) {
@@ -2151,6 +2280,7 @@ function initScripts(delay, hash) {
 
     gsap.set("body", {
         autoAlpha: 1,
+        cursor: 'wait'
     })
 
     // gsap.config({
@@ -2190,6 +2320,7 @@ function initScripts(delay, hash) {
         initHeroAnimations(delay, hash);
         initPreloader();
         initAppearEffects(delay);
+
         initTeamImagePin();
     })
 }
@@ -2233,32 +2364,47 @@ document.addEventListener('DOMContentLoaded', () => {
     // initScripts(0);
 
     swup.hooks.on('page:view', (visit) => {
+        document.body.style.cursor = "wait";
         initScripts(.8, visit.to.hash);
     });
+
+    swup.hooks.on('visit:end', (visit) => {
+        document.body.style.cursor = "";
+    });
+
 
     swup.hooks.on('scroll:anchor', (visit) => {
         const wrapper = document.querySelector('.page-wrapper');
 
         const currentScrollTop = wrapper.scrollTop;
+        let mm = gsap.matchMedia();
+
+        mm.add("(min-width: 768px)", () => {
+
+            if (visit.to.hash.includes("team")) {
 
 
-        if (visit.to.hash.includes("team")) {
+
+                wrapper.scrollTo({
+                    top: currentScrollTop + 100
+                })
+
+            } else {
+
+                wrapper.scrollTo({
+                    top: currentScrollTop - 100
+                })
+            }
 
 
+        })
 
+        mm.add("(max-width: 767px)", () => {
             wrapper.scrollTo({
-                top: currentScrollTop + 100
-            })
-
-        } else {
-
-            wrapper.scrollTo({
-                top: currentScrollTop - 100
+                top: currentScrollTop
             })
         }
-
-
-
+        )
 
     });
 
